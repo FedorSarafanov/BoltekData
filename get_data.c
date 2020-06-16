@@ -76,13 +76,6 @@ static int usb_read(void)
         // for (size_t i=0;i<nread;++i) printf("%02X ", receiveBuf[i]);
         memset(string, 0, BUFFER_SIZE);
         strncpy(string, receiveBuf, nread);
-
-        // ss = rmv(string);
-
-        // printf("%d", strlen(string));
-
-        // printf("%s", ss);
-        // printf("\n");
         // printf("%s", receiveBuf);  //Use this for benchmarking purposes
         return 0;
     }
@@ -257,9 +250,13 @@ int main(int argc, char **argv)
 
     char filename[50];
     strftime(filename, sizeof(outtime), "%Y-%m-%d-%H:%M:%S.txt", gtm);
-    printf("Create new file %s\n", filename);
+    printf("Start file %s\n", filename);
+
+
     int j = 0;
     int rushhour = 0;
+
+
     while (1){
         usb_read();
         for(int i = 0; string[i] != '\0'; i++){
@@ -276,12 +273,12 @@ int main(int argc, char **argv)
                     gtm = gmtime(&sec);
                     // printf("%d\n", gtm->tm_sec);
                     // if (gtm->tm_min==0 && gtm->tm_sec==0) // Истек час
-                    if (gtm->tm_sec==0) // Истек час
+                    if (gtm->tm_sec==0)
                     {
                         if (rushhour == 0)
                         {
                             strftime(filename, sizeof(outtime), "%Y-%m-%d-%H:%M:%S.txt", gtm);
-                            printf("Create new file %s\n", filename);
+                            printf("Start file %s\n", filename);
                             rushhour = 1;
                         }
                     }
@@ -292,7 +289,7 @@ int main(int argc, char **argv)
 
                     strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
                     outfile = fopen(filename, "a+");
-                    fprintf(outfile,"%s\t%s.%d\n",strBuf,outtime,usec);
+                    fprintf(outfile,"%s\t%s.%06d\n",strBuf,outtime,usec);
                     fclose(outfile);
 
 		        }
