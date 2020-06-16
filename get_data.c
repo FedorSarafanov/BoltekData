@@ -289,7 +289,7 @@ int main(int argc, char **argv)
 
                     strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
                     outfile = fopen(filename, "a+");
-                    fprintf(outfile,"%s\t%s.%06d\n",strBuf,outtime,usec);
+                    fprintf(outfile,"%s.%06d\t%s\n",outtime,usec,strBuf);
                     fclose(outfile);
 
 		        }
