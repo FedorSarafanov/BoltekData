@@ -27,31 +27,27 @@ uint8_t transferBuf[BUFFER_SIZE];
 char string[BUFFER_SIZE];
 uint16_t counter=0;
 
-char strBuf[5]; 
-// char datetime[50]; 
-struct timeval ut_tv;
-char outtime[25];
-struct tm *gtm;
+
 
 
 
 /**
- * Read a packet
+ * Read a packet to `string` variable
  */
 static int usb_read(void)
 {
     int nread, ret;
     ret = libusb_bulk_transfer(handle, USB_ENDPOINT_IN, receiveBuf, sizeof(receiveBuf),
-            &nread, USB_TIMEOUT);
-    if (ret){
+                               &nread, USB_TIMEOUT);
+    if (ret) {
         printf("ERROR in bulk read: %d\n", ret);
         return -1;
     }
-    else{
+    else {
         // printf("%d receive %d bytes from device:", ++counter, nread);
         // for (size_t i=0;i<nread;++i) printf("%02X ", receiveBuf[i]);
         memset(string, 0, sizeof(string));
-        strncpy(string, receiveBuf, nread);
+        strncpy(string, (const char*)receiveBuf, nread);
         // printf("%s", receiveBuf);  //Use this for benchmarking purposes
         return 0;
     }
@@ -69,7 +65,7 @@ static int usb_write(void)
     // n = sprintf(transferBuf, "%d\0",count++);
     //write transfer
     //probably unsafe to use n twice...
-   
+
     //ret = libusb_bulk_transfer(handle, USB_ENDPOINT_OUT, transferBuf, n,
     //      &n, USB_TIMEOUT);
 
@@ -77,25 +73,25 @@ static int usb_write(void)
     ret = libusb_bulk_transfer(handle, USB_ENDPOINT_OUT, transferBuf, n, &n, USB_TIMEOUT);
 
     //Error handling
-    switch(ret){
-        case 0:
-            printf("send %d bytes to device\n", n);
-            return 0;
-        case LIBUSB_ERROR_TIMEOUT:
-            printf("ERROR in bulk write: %d Timeout\n", ret);
-            break;
-        case LIBUSB_ERROR_PIPE:
-            printf("ERROR in bulk write: %d Pipe\n", ret);
-            break;
-        case LIBUSB_ERROR_OVERFLOW:
-            printf("ERROR in bulk write: %d Overflow\n", ret);
-            break;
-        case LIBUSB_ERROR_NO_DEVICE:
-            printf("ERROR in bulk write: %d No Device\n", ret);
-            break;
-        default:
-            printf("ERROR in bulk write: %d\n", ret);
-            break;
+    switch(ret) {
+    case 0:
+        printf("send %d bytes to device\n", n);
+        return 0;
+    case LIBUSB_ERROR_TIMEOUT:
+        printf("ERROR in bulk write: %d Timeout\n", ret);
+        break;
+    case LIBUSB_ERROR_PIPE:
+        printf("ERROR in bulk write: %d Pipe\n", ret);
+        break;
+    case LIBUSB_ERROR_OVERFLOW:
+        printf("ERROR in bulk write: %d Overflow\n", ret);
+        break;
+    case LIBUSB_ERROR_NO_DEVICE:
+        printf("ERROR in bulk write: %d No Device\n", ret);
+        break;
+    default:
+        printf("ERROR in bulk write: %d\n", ret);
+        break;
     }
     return -1;
 
@@ -103,14 +99,14 @@ static int usb_write(void)
 
 void usb_control_out(uint8_t bRequest, uint16_t wValue, uint16_t wIndex) {
     int rc = libusb_control_transfer(handle,
-        0x40, //uint8_t     bmRequestType,
-        bRequest,
-        wValue,
-        wIndex,
-        NULL, // unsigned char *    data,
-        0, // uint16_t      wLength,
-        USB_TIMEOUT //unsigned int      timeout 
-    );
+                                     0x40, //uint8_t     bmRequestType,
+                                     bRequest,
+                                     wValue,
+                                     wIndex,
+                                     NULL, // unsigned char *    data,
+                                     0, // uint16_t      wLength,
+                                     USB_TIMEOUT //unsigned int      timeout
+                                    );
 
     printf("control result %d\n", rc);
 }
@@ -121,18 +117,24 @@ void usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t
     }
     uint8_t cr2[2];
     int rc2 = libusb_control_transfer(handle,
-        0xC0, //uint8_t     bmRequestType,
-        bRequest,
-        wValue,
-        wIndex,
-        cr2, // unsigned char *     data,
-        wLength, // uint16_t    wLength,
-        USB_TIMEOUT //unsigned int      timeout 
-    );
+                                      0xC0, //uint8_t     bmRequestType,
+                                      bRequest,
+                                      wValue,
+                                      wIndex,
+                                      cr2, // unsigned char *     data,
+                                      wLength, // uint16_t    wLength,
+                                      USB_TIMEOUT //unsigned int      timeout
+                                     );
     switch (wLength) {
-    case 0: printf("control result %d\n", rc2); break;
-    case 1: printf("control result %d: %02X\n", rc2, (unsigned)cr2[0]); break;
-    case 2: printf("control result %d: %02X %02X\n", rc2, (unsigned)cr2[0], (unsigned)cr2[1]); break;
+    case 0:
+        printf("control result %d\n", rc2);
+        break;
+    case 1:
+        printf("control result %d: %02X\n", rc2, (unsigned)cr2[0]);
+        break;
+    case 2:
+        printf("control result %d: %02X %02X\n", rc2, (unsigned)cr2[0], (unsigned)cr2[1]);
+        break;
     }
 }
 
@@ -143,7 +145,7 @@ void usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t
 static void sighandler(int signum)
 {
     printf( "\nInterrupt signal received\n" );
-    if (handle){
+    if (handle) {
         libusb_release_interface (handle, 0);
         printf( "\nInterrupt signal received1\n" );
         libusb_close(handle);
@@ -156,7 +158,7 @@ static void sighandler(int signum)
     exit(0);
 }
 
-// unused function 
+// unused function
 /*
 char *del_char(const char * src, char * res, char c)
 {
@@ -180,7 +182,7 @@ int main(int argc, char *argv[])
 
     //Open Device with VendorID and ProductID
     handle = libusb_open_device_with_vid_pid(ctx,
-                USB_VENDOR_ID, USB_PRODUCT_ID);
+             USB_VENDOR_ID, USB_PRODUCT_ID);
     if (!handle) {
         perror("device not found");
         return 1;
@@ -215,10 +217,16 @@ int main(int argc, char *argv[])
     usb_control_out(0, 1, 0);
     usb_control_out(0, 1, 0);
     usb_control_out(0, 1, 0);
-    usb_control_out(0, 1, 0); 
+    usb_control_out(0, 1, 0);
     usb_control_out(0, 1, 0);
     usb_control_out(0, 1, 0);
     usb_control_out(0, 2, 0);
+
+    char strBuf[5];
+    // char datetime[50];
+    struct timeval ut_tv;
+    char outtime[25];
+    struct tm *gtm;
 
     FILE *outfile;
 
@@ -237,10 +245,10 @@ int main(int argc, char *argv[])
     while (1) {
         usb_read();
         for (int i = 0; string[i] != '\0'; i++) {
-        	if (string[i] == '$')
-        	{
-		        if (strlen(strBuf) > 0) {
-	        		// printf("%s\n", strBuf);
+            if (string[i] == '$')
+            {
+                if (strlen(strBuf) > 0) {
+                    // printf("%s\n", strBuf);
 
                     gettimeofday(&ut_tv, NULL);
                     const time_t sec = (time_t)ut_tv.tv_sec;
@@ -266,26 +274,26 @@ int main(int argc, char *argv[])
 
                     strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
                     outfile = fopen(filename, "a+");
-                    fprintf(outfile, "%s.%06d\t%s\n", outtime, usec, strBuf);
+                    fprintf(outfile, "%s.%06ld\t%s\n", outtime, (long)usec, strBuf);
                     fclose(outfile);
 
-		        }
-        
-        		// Очистка буфера
-        		j = 0;
-    		    memset(strBuf, 0, sizeof(strBuf));
-    		    
-        	}
-        	if (string[i] == '+' || string[i] == '-' || isdigit(string[i]))
-        	{
-        		if (j<=4)
-        		{
-	        		strBuf[j] = string[i];
-	        		j++;
-        		}
-        	}
+                }
+
+                // Очистка буфера
+                j = 0;
+                memset(strBuf, 0, sizeof(strBuf));
+
+            }
+            if (string[i] == '+' || string[i] == '-' || isdigit(string[i]))
+            {
+                if (j<=4)
+                {
+                    strBuf[j] = string[i];
+                    j++;
+                }
+            }
         }
-        
+
         usleep(USLEEP_PERIOD);
     }
     fclose(outfile);
