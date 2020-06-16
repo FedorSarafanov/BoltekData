@@ -1,22 +1,3 @@
-/*
- * Simple libusb-1.0 test programm
- * It openes an USB device, expects two Bulk endpoints,
- *   EP1 should be IN
- *   EP2 should be OUT
- * It alternates between reading and writing a packet to the Device.
- * It uses Synchronous device I/O
- *
- * Compile:
- *   gcc -lusb-1.0 -o test test.c
- * Run:
- *   ./test
- * Thanks to BertOS for the example:
- *   http://www.bertos.org/use/tutorial-front-page/drivers-usb-device
- *
- * For Documentation on libusb see:
- *   http://libusb.sourceforge.net/api-1.0/modules.html
- */
-
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -25,13 +6,7 @@
 #include <signal.h>
 #include <time.h>
 
-//change if your libusb.h is located elswhere
 #include <libusb-1.0/libusb.h>
-//or uncomment this line:
-//#include <libusb.h>
-//and compile with:
-//gcc -lusb-1.0 -o test -I/path/to/libusb-1.0/ test.c
-
 
 #define USB_VENDOR_ID       0x0403      /* USB vendor ID used by the device
                                          * 0x0483 is STMs ID
@@ -44,6 +19,7 @@
 static libusb_context *ctx = NULL;
 static libusb_device_handle *handle;
 
+#define USLEEP_PERIOD 5000
 #define BUFFER_SIZE 1024
 
 static uint8_t receiveBuf[BUFFER_SIZE];
@@ -52,14 +28,14 @@ char string[BUFFER_SIZE];
 uint16_t counter=0;
 
 char strBuf[5]; 
-char datetime[50]; 
+// char datetime[50]; 
 struct timeval ut_tv;
 char outtime[25];
 struct tm *gtm;
 
 
 
-/*
+/**
  * Read a packet
  */
 static int usb_read(void)
@@ -74,19 +50,18 @@ static int usb_read(void)
     else{
         // printf("%d receive %d bytes from device:", ++counter, nread);
         // for (size_t i=0;i<nread;++i) printf("%02X ", receiveBuf[i]);
-        memset(string, 0, BUFFER_SIZE);
+        memset(string, 0, sizeof(string));
         strncpy(string, receiveBuf, nread);
         // printf("%s", receiveBuf);  //Use this for benchmarking purposes
         return 0;
     }
 }
 
-
-/*
- * write a few bytes to the device
- *
- */
 uint16_t count=0;
+
+/**
+ * write a few bytes to the device
+ */
 static int usb_write(void)
 {
     int n, ret;
@@ -154,14 +129,14 @@ void usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t
         wLength, // uint16_t    wLength,
         USB_TIMEOUT //unsigned int      timeout 
     );
-    switch(wLength) {
+    switch (wLength) {
     case 0: printf("control result %d\n", rc2); break;
     case 1: printf("control result %d: %02X\n", rc2, (unsigned)cr2[0]); break;
     case 2: printf("control result %d: %02X %02X\n", rc2, (unsigned)cr2[0], (unsigned)cr2[1]); break;
     }
 }
 
-/*
+/**
  * on SIGINT: close USB interface
  * This still leads to a segfault on my system...
  */
@@ -181,17 +156,21 @@ static void sighandler(int signum)
     exit(0);
 }
 
-char * del_char(const char * src, char * res, char c)
+// unused function 
+/*
+char *del_char(const char * src, char * res, char c)
 {
     char *tmp = res;
-    do
-        if (*src != c)
+    do {
+        if (*src != c) {
             *res++ = *src;
-    while (*src++);
+        }
+    } while (*src++);
     return tmp;
 }
+*/
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     //Pass Interrupt Signal to our handler
     signal(SIGINT, sighandler);
@@ -249,25 +228,23 @@ int main(int argc, char **argv)
     gtm = gmtime(&sec);
 
     char filename[50];
-    strftime(filename, sizeof(outtime), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+    strftime(filename, sizeof(filename), "%Y-%m-%d-%H:%M:%S.txt", gtm);
     printf("Start file %s\n", filename);
-
 
     int j = 0;
     int rushhour = 0;
 
-
-    while (1){
+    while (1) {
         usb_read();
-        for(int i = 0; string[i] != '\0'; i++){
-        	if (string[i] == (char)36) // $
+        for (int i = 0; string[i] != '\0'; i++) {
+        	if (string[i] == '$')
         	{
-		        if(strlen(strBuf)>0){
+		        if (strlen(strBuf) > 0) {
 	        		// printf("%s\n", strBuf);
 
                     gettimeofday(&ut_tv, NULL);
                     const time_t sec = (time_t)ut_tv.tv_sec;
-                    const time_t usec = (time_t)ut_tv.tv_usec;
+                    const suseconds_t usec = (time_t)ut_tv.tv_usec;
 
 
                     gtm = gmtime(&sec);
@@ -277,7 +254,7 @@ int main(int argc, char **argv)
                     {
                         if (rushhour == 0)
                         {
-                            strftime(filename, sizeof(outtime), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+                            strftime(filename, sizeof(filename), "%Y-%m-%d-%H:%M:%S.txt", gtm);
                             printf("Start file %s\n", filename);
                             rushhour = 1;
                         }
@@ -289,17 +266,17 @@ int main(int argc, char **argv)
 
                     strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
                     outfile = fopen(filename, "a+");
-                    fprintf(outfile,"%s.%06d\t%s\n",outtime,usec,strBuf);
+                    fprintf(outfile, "%s.%06d\t%s\n", outtime, usec, strBuf);
                     fclose(outfile);
 
 		        }
         
         		// Очистка буфера
         		j = 0;
-    		    memset(strBuf, 0, 5);
+    		    memset(strBuf, 0, sizeof(strBuf));
     		    
         	}
-        	if (string[i] == (char)43 || string[i] == (char)45 || isdigit(string[i]))
+        	if (string[i] == '+' || string[i] == '-' || isdigit(string[i]))
         	{
         		if (j<=4)
         		{
@@ -309,13 +286,13 @@ int main(int argc, char **argv)
         	}
         }
         
-        usleep(5000);
+        usleep(USLEEP_PERIOD);
     }
     fclose(outfile);
 
     libusb_close(handle);
     libusb_exit(NULL);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
