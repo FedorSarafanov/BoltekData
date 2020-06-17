@@ -1,6 +1,10 @@
 import numpy as np
 from numpy import pi,sqrt, linspace
 import matplotlib.pyplot as plt
+import matplotlib.dates as md
+import numpy as np
+import datetime as dt
+import time
 
 
 
@@ -9,10 +13,20 @@ def processing(name):
 		strings=datafile.read().split()
 		del strings[0:4]
 		numbers = list(map(str, strings))
-		time=np.array(numbers[0::2])
+		T=np.array(numbers[0::2])
+		timestamp = [time.mktime(dt.datetime.strptime(s[:-7], "%Y-%m-%d-%H:%M:%S").timetuple())+float(s[-6:])/10**6 for s in T]
 		amplitude=np.array(numbers[1::2], dtype=np.int)
-		print(amplitude)
-		# ur=np.array(numbers[2::4])
-		# ul=np.array(numbers[3::4])
+		print(timestamp)
 
-processing('2020-06-16-12:27:00.txt')
+		dates=[dt.datetime.fromtimestamp(ts) for ts in timestamp]
+
+		ax=plt.gca()
+		# xfmt = md.DateFormatter('%Y-%m-%d %H:%M:%S')
+		xfmt = md.DateFormatter('%H:%M:%S')
+		plt.xticks( rotation=25 )
+		ax.xaxis.set_major_formatter(xfmt)
+		plt.plot(dates,amplitude)
+		plt.tight_layout()
+		# plt.plot(timestamp,amplitude)
+		plt.show()
+processing('2020-06-17-10:37:00.txt')
