@@ -33,9 +33,9 @@ char logname[15] = "boltek.log";
 
 
 #define helpData  "Boltek fluxmeter client v0.1\n"\
-                  "F.Kuterin, F.Sarafanov (c) 2020\n\n"\
-                  "Use \t./get_data [PID],\t where [PID] can be obtained using \n"\
-                  "command `lsusb  -d 0x0403: -v | grep idProduct`\n"\
+                  "F.Kuterin, F.Sarafanov (c) IAPRAS 2020\n\n"\
+                  "Use \t./get_data [PID] [PREFIX],\n where [PID] can be obtained using \n"\
+                  "command `lsusb  -d 0x0403: -v | grep idProduct`,\n [PREFIX] -- location string (without whitespaces or dash)\n"\
                   "\nSee log in file 'boltek.log'"
 
 
@@ -309,37 +309,42 @@ int init(const unsigned PID)
 
 int main(int argc, char *argv[])
 {
-    printf("%s\n", helpData);
-    unsigned PID = 0xf245;
-    if (argc>1)
-    {
-        sscanf(argv[1],"%x",&PID);
-    }
-
-    int initFlag = init(PID);
-    // logfile = fopen(logname,"a+");
-    // fprintf(logfile, "%d\n", initFlag);
-    // fclose(logfile);
-
-
     char strBuf[6];
-    // char datetime[50];
     struct timeval ut_tv;
     char outtime[25];
     struct tm *gtm;
-
-
     FILE *outfile = NULL;
+    char fn_woprefix[100];
+    char filename[100];
+    char lastfn[100] = "";
+    char prefix[100] = "default";
+
+    unsigned PID = 0xf245;
+    if (argc>1)
+    {
+        if (strcmp(argv[1],"-h")==0)
+        {
+            printf("%s\n", helpData);
+            return EXIT_SUCCESS;
+        }
+        sscanf(argv[1],"%x",&PID);
+    }
+    if (argc>2)
+    {
+        sscanf(argv[2],"%s",&prefix);
+    }
+
+    int initFlag = init(PID);
+
 
     gettimeofday(&ut_tv, NULL);
     const time_t sec = (time_t)ut_tv.tv_sec;
     const time_t usec = (time_t)ut_tv.tv_usec;
     gtm = gmtime(&sec);
 
-    char filename[50];
-    char lastfn[50] = "";
 
-    strftime(filename, sizeof(filename), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+    strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+    sprintf(filename, "%s-%s",prefix,fn_woprefix);
     strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
 
 
@@ -372,7 +377,8 @@ int main(int argc, char *argv[])
                 fclose(logfile);
 
                 lastTime = sec;
-                strftime(filename, sizeof(filename), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+                strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+                sprintf(filename, "%s-%s",prefix,fn_woprefix);
             }
         } else {
             if (!usbAlarm)
@@ -399,13 +405,14 @@ int main(int argc, char *argv[])
 
 
                         gtm = gmtime(&sec);
-                        // if (gtm->tm_min==0 && gtm->tm_sec==0) // Истек час
-                        if (gtm->tm_sec==0)
+                        if (gtm->tm_min==0 && gtm->tm_sec==0) // Истек час
+                        // if (gtm->tm_sec==0)
                         {
                             if (rushhour == 0)
                             {
                                 // strcpy(lastfn, filename);
-                                strftime(filename, sizeof(filename), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+                                strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+                                sprintf(filename, "%s-%s",prefix,fn_woprefix);
                                 strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
                                 rushhour = 1;
                             }
@@ -478,7 +485,8 @@ int main(int argc, char *argv[])
                                 fprintf(logfile, "%s signal cable connected\n",outtime);
                                 fclose(logfile);
 
-                                strftime(filename, sizeof(filename), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+                                strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+                                sprintf(filename, "%s-%s",prefix,fn_woprefix);
                             }
                         }
                     }
@@ -496,7 +504,8 @@ int main(int argc, char *argv[])
             gettimeofday(&ut_tv, NULL);
             const time_t sec = (time_t)ut_tv.tv_sec;
             gtm = gmtime(&sec);
-            strftime(filename, sizeof(filename), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+            strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
+            sprintf(filename, "%s-%s",prefix,fn_woprefix);
         }
         usleep(USLEEP_PERIOD);
     }
