@@ -64,17 +64,8 @@ uint16_t count=0;
  */
 static int usb_write(void)
 {
-    int n, ret;
-    //count up
-    // n = sprintf(transferBuf, "%d\0",count++);
-    //write transfer
-    //probably unsafe to use n twice...
-
-    //ret = libusb_bulk_transfer(handle, USB_ENDPOINT_OUT, transferBuf, n,
-    //      &n, USB_TIMEOUT);
-
-    n = 0;
-    ret = libusb_bulk_transfer(handle, USB_ENDPOINT_OUT, transferBuf, n, &n, USB_TIMEOUT);
+    int n;
+    int ret = libusb_bulk_transfer(handle, USB_ENDPOINT_OUT, transferBuf, n, &n, USB_TIMEOUT);
 
     //Error handling
     switch(ret) {
@@ -309,8 +300,8 @@ int main(int argc, char *argv[])
 
 
                         gtm = gmtime(&sec);
-                        if (gtm->tm_min==0 && gtm->tm_sec==0) // End of hour
                         // if (gtm->tm_sec==0) // End of min (debug)
+                        if (gtm->tm_min==0 && gtm->tm_sec==0) // End of hour
                         {
                             if (rushhour == 0)
                             {
