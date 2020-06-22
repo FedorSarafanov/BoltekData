@@ -48,19 +48,11 @@ static int usb_read(void)
     ret = libusb_bulk_transfer(handle, USB_ENDPOINT_IN, receiveBuf, sizeof(receiveBuf),
                                &nread, USB_TIMEOUT);
     if (ret) {
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "ERROR in bulk read: %d\n", ret);
-        // fclose(logfile);
-
         return -1;
     }
     else {
         memset(string, 0, sizeof(string));
         strncpy(string, (const char*)receiveBuf, nread);
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "%s\n", string);
-        // fclose(logfile);
-
         return 0;
     }
 }
@@ -87,40 +79,17 @@ static int usb_write(void)
     //Error handling
     switch(ret) {
     case 0:
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "send %d bytes to device\n", n);
-        // fclose(logfile);
-
+        //send n bytes to device
         return 0;
     case LIBUSB_ERROR_TIMEOUT:
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "ERROR in bulk write: %d Timeout\n", ret);
-        // fclose(logfile);
-
         break;
     case LIBUSB_ERROR_PIPE:
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "ERROR in bulk write: %d Pipe\n", ret);
-        // fclose(logfile);
-
         break;
     case LIBUSB_ERROR_OVERFLOW:
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "ERROR in bulk write: %d Overflow\n", ret);
-        // fclose(logfile);
-
         break;
     case LIBUSB_ERROR_NO_DEVICE:
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "ERROR in bulk write: %d No Device\n", ret);
-        // fclose(logfile);
-
         break;
     default:
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "ERROR in bulk write: %d\n", ret);
-        // fclose(logfile);
-
         break;
     }
     return -1;
@@ -137,20 +106,9 @@ void usb_control_out(uint8_t bRequest, uint16_t wValue, uint16_t wIndex) {
                                      0, // uint16_t      wLength,
                                      USB_TIMEOUT //unsigned int      timeout
                                     );
-
-    // logfile = fopen(logname,"a+");
-    // fprintf(logfile, "control result %d\n", rc);
-    // fclose(logfile);
-
 }
 
 void usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength) {
-    if (wLength > 2) {
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "usb_control_in length arg must be 0,1,2, no more, not %u\n", (unsigned)wLength);
-        // fclose(logfile);
-
-    }
     uint8_t cr2[2];
     int rc2 = libusb_control_transfer(handle,
                                       0xC0, //uint8_t     bmRequestType,
@@ -161,27 +119,8 @@ void usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t
                                       wLength, // uint16_t    wLength,
                                       USB_TIMEOUT //unsigned int      timeout
                                      );
-    switch (wLength) {
-    case 0:
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "control result %d\n", rc2);
-        // fclose(logfile);
-
-        break;
-    case 1:
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "control result %d: %02X\n", rc2, (unsigned)cr2[0]);
-        // fclose(logfile);
-
-        break;
-    case 2:
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "control result %d: %02X %02X\n", rc2, (unsigned)cr2[0], (unsigned)cr2[1]);
-        // fclose(logfile);
-
-        break;
-    }
 }
+
 
 /**
  * on SIGINT: fclose USB interface
@@ -204,51 +143,20 @@ static void sighandler(int signum)
     fprintf(logfile, "%s exit\n",outtime);
     fclose(logfile);
 
-    // logfile = fopen(logname,"a+");
-    // fprintf(logfile,  "\nInterrupt signal received\n" );
-    // fclose(logfile);
 
     if (handle) {
         libusb_release_interface (handle, 0);
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile,  "\nInterrupt signal received1\n" );
-        // fclose(logfile);
-
         libusb_close(handle);
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile,  "\nInterrupt signal received2\n" );
-        // fclose(logfile);
-
     }
-    // logfile = fopen(logname,"a+");
-    // fprintf(logfile,  "\nInterrupt signal received3\n" );
-    // fclose(logfile);
 
     if (!usbAlarm)
     {
         libusb_exit(NULL);
     }
-    // logfile = fopen(logname,"a+");
-    // fprintf(logfile,  "\nInterrupt signal received4\n" );
-    // fclose(logfile);
-
 
     exit(0);
 }
 
-// unused function
-/*
-char *del_char(const char * src, char * res, char c)
-{
-    char *tmp = res;
-    do {
-        if (*src != c) {
-            *res++ = *src;
-        }
-    } while (*src++);
-    return tmp;
-}
-*/
 
 int init(const unsigned PID)
 {
@@ -270,13 +178,9 @@ int init(const unsigned PID)
     //Claim Interface 0 from the device
     r = libusb_claim_interface(handle, 0);
     if (r < 0) {
-        // fprintf(stderr, "usb_claim_interface error %d\n", r);
+        // usb_claim_interface error
         return 2;
     }
-    // logfile = fopen(logname,"a+");
-    // fprintf(logfile, "Interface claimed\n");
-    // fclose(logfile);
-
 
     usb_control_out(0, 0, 0);
     usb_control_in (5, 0, 0, 2);
@@ -405,12 +309,11 @@ int main(int argc, char *argv[])
 
 
                         gtm = gmtime(&sec);
-                        if (gtm->tm_min==0 && gtm->tm_sec==0) // Истек час
-                        // if (gtm->tm_sec==0)
+                        if (gtm->tm_min==0 && gtm->tm_sec==0) // End of hour
+                        // if (gtm->tm_sec==0) // End of min (debug)
                         {
                             if (rushhour == 0)
                             {
-                                // strcpy(lastfn, filename);
                                 strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
                                 sprintf(filename, "%s-%s",prefix,fn_woprefix);
                                 strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
@@ -443,7 +346,6 @@ int main(int argc, char *argv[])
 
                     }
 
-                    // Очистка буфера
                     j = 0;
                     memset(strBuf, 0, sizeof(strBuf));
 
@@ -458,7 +360,6 @@ int main(int argc, char *argv[])
                             j++;
                         }
                     } else {
-                        // Не $, не +-, не цифра
                         if (sec-lastTime > 1 && lastTime != 0)
                         {
                             if (!lineAlarm)
