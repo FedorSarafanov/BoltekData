@@ -5,6 +5,7 @@ import matplotlib.dates as md
 import numpy as np
 import datetime as dt
 import time
+import sys
 
 
 
@@ -31,4 +32,4 @@ def processing(name):
 		plt.tight_layout()
 		# plt.plot(timestamp,amplitude)
 		plt.show()
-processing('2020-06-17-10:37:00.txt')
+processing(sys.argv[1])
