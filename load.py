@@ -41,7 +41,7 @@ if len(sys.argv)==2:
 if len(sys.argv)>2:
 	for file in sys.argv[1:]:
 		processing(file)
-
+plt.grid(which='both')
 plt.tight_layout()
 plt.show()
 
