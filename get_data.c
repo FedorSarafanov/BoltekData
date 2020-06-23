@@ -18,6 +18,7 @@
 
 static libusb_context *ctx = NULL;
 static libusb_device_handle *handle;
+libusb_device **devs;
 
 #define USLEEP_PERIOD 50000
 #define BUFFER_SIZE 1024
@@ -30,13 +31,15 @@ int usbAlarm = 0;
 
 FILE *logfile = NULL;
 char logname[15] = "boltek.log";
+char SID[100] = "E2150531";
 
 
 #define helpData  "Boltek fluxmeter client v0.1\n"\
                   "F.Kuterin, F.Sarafanov (c) IAPRAS 2020\n\n"\
-                  "Use \t./get_data [PID] [PREFIX],\n where [PID] can be obtained using \n"\
+                  "Use \t./get_data [SID] [PREFIX] [PID],\n where [PID] can be obtained using \n"\
                   "command `lsusb  -d 0x0403: -v | grep idProduct`,\n [PREFIX] -- location string (without whitespaces or dash)\n"\
-                  "\nSee log in file 'boltek.log'"
+                  "[SID] can be obtained using command `lsusb  -d 0x0403: -v | grep Serial`.\n"\
+                  "\nYou can see log in file 'boltek.log'" 
 
 
 /**
@@ -149,17 +152,105 @@ static void sighandler(int signum)
 }
 
 
+void printdev(libusb_device *dev) {
+
+}
+
 int init(const unsigned PID)
 {
+    struct timeval ut_tv;
+    char outtime[25];
+    struct tm *gtm;
+
+
     //Pass Interrupt Signal to our handler
     signal(SIGINT, sighandler);
 
     libusb_init(&ctx);
     // libusb_set_debug(ctx, 3);
 
+    int cnt = libusb_get_device_list(ctx, &devs);
+    int recnt = 0;
+    if(cnt < 0) {
+        gettimeofday(&ut_tv, NULL);
+        const time_t sec = (time_t)ut_tv.tv_sec;
+        gtm = gmtime(&sec);
+        strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
+        logfile = fopen(logname,"a+");
+        fprintf(logfile, "%s Error in libusb_get_device_list\n",outtime);
+        fclose(logfile);
+        printf("ERR1");
+        return -1;
+    } else {
+        // printf("найдено устройств: %d\n", cnt);
+        for(int i = 0; i < cnt; i++) {  //цикл перебора всех устройств
+            // printdev(devs[i]);
+            libusb_device *dev = devs[i];
+
+            struct libusb_device_descriptor desc; //дескрипторустройства
+            struct libusb_config_descriptor *config;//дескрипторконфигурацииобъекта
+            const struct libusb_interface *inter;
+            const struct libusb_interface_descriptor *interdesc;
+            const struct libusb_endpoint_descriptor *epdesc;
+
+            int r = libusb_get_device_descriptor(dev, &desc);
+
+            if (r < 0) {
+                // printf("ERR BY GET\n");
+                libusb_free_config_descriptor(config);
+            } else {
+                static libusb_device_handle *devHandle = NULL;
+                libusb_get_config_descriptor(dev, 0, &config);
+                unsigned char dev_detail[200];
+                int returnStatus = 0;
+                memset(dev_detail, 0, sizeof(dev_detail));
+
+
+                int device_open_status = libusb_open(dev, &devHandle);
+                // printf("OPEN STATUS %d;\n",device_open_status);
+                // printf("okay1\n");
+                if (device_open_status == 0) {
+
+                    returnStatus = libusb_get_string_descriptor_ascii(devHandle,
+                                   desc.iSerialNumber, dev_detail, sizeof(dev_detail));
+                    // printf("okay2\n");
+                    if (returnStatus < 0) {
+                        // printf("Error serial Number\n");
+                    }
+                    else {
+                        // printf("Serial Number: %s\n",dev_detail);
+                        // printf("Vendor:Device = %04x:%04x\n", desc.idVendor, desc.idProduct);
+                        if (USB_VENDOR_ID == desc.idVendor && PID == desc.idProduct && strcmp(SID,dev_detail) == 0) {
+                            // printf("OK\n");
+                            recnt++;
+                            handle = devHandle;
+                            break;
+                        }else{
+                            // printf("CLOSE3\n");
+                            libusb_close(devHandle);
+                        }
+                    }
+                } else
+                {
+                    // libusb_close(devHandle);
+                }
+                // libusb_close(devHandle);
+                libusb_free_config_descriptor(config);
+            }
+        }
+    }
+    libusb_free_device_list(devs, 1);
+
+
+    // printf("MY DEVICES: %d\n", recnt);
+    if (recnt<1){
+        return 3;
+    }
+
+
     //Open Device with VendorID and ProductID
-    handle = libusb_open_device_with_vid_pid(ctx,
-             USB_VENDOR_ID, PID);
+    // handle = libusb_open_device_with_vid_pid(ctx,
+    //          USB_VENDOR_ID, PID);
     if (!handle) {
         // perror("device not found");
         return 1;
@@ -167,6 +258,7 @@ int init(const unsigned PID)
 
     int r = 1;
     //Claim Interface 0 from the device
+    // printf("CLAIM\n");
     r = libusb_claim_interface(handle, 0);
     if (r < 0) {
         // usb_claim_interface error
@@ -222,11 +314,15 @@ int main(int argc, char *argv[])
             printf("%s\n", helpData);
             return EXIT_SUCCESS;
         }
-        sscanf(argv[1],"%x",&PID);
+        sscanf(argv[1],"%s",&SID);
     }
     if (argc>2)
     {
         sscanf(argv[2],"%s",&prefix);
+    }
+    if (argc>3)
+    {
+        sscanf(argv[3],"%x",&PID);
     }
 
     int initFlag = init(PID);
@@ -388,7 +484,8 @@ int main(int argc, char *argv[])
         }
         else
         {
-            libusb_close(handle);
+            // printf("CLOSE1\n");
+            // libusb_close(handle);
             libusb_exit(NULL);
             usleep(500000);
             initFlag = init(PID);
@@ -403,6 +500,7 @@ int main(int argc, char *argv[])
     }
     fclose(outfile);
 
+    printf("CLOSE2\n");
     libusb_close(handle);
     libusb_exit(NULL);
 
