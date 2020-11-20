@@ -1,4 +1,4 @@
-#include "writer.h"
+#include "writer.h"  
 
 
 Writer::Writer(const std::string &prefix, Logger *logger)
@@ -7,6 +7,7 @@ Writer::Writer(const std::string &prefix, Logger *logger)
 	m_hour_end_count = 0;
 	m_fn = "";
 	m_logger = logger;
+	m_error_count = 0;
 }
 
 Writer::~Writer()
@@ -31,7 +32,18 @@ void Writer::open(struct tm *gtm)
 		}    	
 	    m_fn = filename;
 		m_file_ptr = fopen(m_fn.c_str(),"a+");
-		m_logger->log("Open new file %s",m_fn.c_str());
+	    if (m_file_ptr)
+	    {
+		    m_logger->log("Open new file %s",m_fn.c_str());
+	    	m_error_count = 0;
+	    }		
+    }
+    if (!m_file_ptr){
+    	m_error_count++;
+    	if (m_error_count == 1)
+    	{
+	    	m_logger->log("Error: Unable to open/create file %s",m_fn.c_str());
+    	}
     }
 }
 
@@ -72,6 +84,12 @@ void Writer::write(const std::string &value)
 	else
 	{
 	    strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
+
+		if( access(m_fn.c_str(), F_OK ) == -1 ) {
+			m_logger->log("Error: Unable to write to file %s",m_fn.c_str());
+		    Writer::open(gtm);
+		}
+
 		fprintf(m_file_ptr, "%s.%06ld\t%s\n", outtime, (long)usec, value.c_str());
 	}
 }

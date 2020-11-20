@@ -26,11 +26,12 @@ libusb_device **devs;
 #define USLEEP_PERIOD 50000
 #define BUFFER_SIZE 1024
 
-static uint8_t receiveBuf[BUFFER_SIZE];
-uint8_t transferBuf[BUFFER_SIZE];
+static uint8_t receive_buf[BUFFER_SIZE];
+uint8_t transfer_buf[BUFFER_SIZE];
 char string[BUFFER_SIZE];
-bool lineAlarm = false;
-bool usbAlarm = false;
+
+bool boltek_signal_connected = true;
+bool boltek_usb_connected = true;
 
 FILE *logfile = NULL;
 char logname[15] = "boltek.log";
@@ -45,7 +46,7 @@ char SID[100] = "E2150533";
                   "\nYou can see log in file 'boltek.log'" 
 
 
-Logger logger("boltek.new");
+Logger logger("boltek.log");
 Writer writer(std::string("prefix"), &logger);
 
 /**
@@ -54,19 +55,18 @@ Writer writer(std::string("prefix"), &logger);
 static int usb_read(void)
 {
     int nread, ret;
-    ret = libusb_bulk_transfer(handle, USB_ENDPOINT_IN, receiveBuf, sizeof(receiveBuf),
+    ret = libusb_bulk_transfer(handle, USB_ENDPOINT_IN, receive_buf, sizeof(receive_buf),
                                &nread, USB_TIMEOUT);
     if (ret) {
         return -1;
     }
     else {
         memset(string, 0, sizeof(string));
-        strncpy(string, (const char*)receiveBuf, nread);
+        strncpy(string, (const char*)receive_buf, nread);
         return 0;
     }
 }
 
-uint16_t count=0;
 
 /**
  * write a few bytes to the device
@@ -74,23 +74,23 @@ uint16_t count=0;
 static int usb_write(void)
 {
     int n;
-    int ret = libusb_bulk_transfer(handle, USB_ENDPOINT_OUT, transferBuf, n, &n, USB_TIMEOUT);
+    int ret = libusb_bulk_transfer(handle, USB_ENDPOINT_OUT, transfer_buf, sizeof(transfer_buf), &n, USB_TIMEOUT);
 
     //Error handling
     switch(ret) {
-    case 0:
-        //send n bytes to device
-        return 0;
-    case LIBUSB_ERROR_TIMEOUT:
-        break;
-    case LIBUSB_ERROR_PIPE:
-        break;
-    case LIBUSB_ERROR_OVERFLOW:
-        break;
-    case LIBUSB_ERROR_NO_DEVICE:
-        break;
-    default:
-        break;
+        case 0:
+            //send n bytes to device
+            return 0;
+        case LIBUSB_ERROR_TIMEOUT:
+            break;
+        case LIBUSB_ERROR_PIPE:
+            break;
+        case LIBUSB_ERROR_OVERFLOW:
+            break;
+        case LIBUSB_ERROR_NO_DEVICE:
+            break;
+        default:
+            break;
     }
     return -1;
 
@@ -129,7 +129,7 @@ static void sighandler(int signum)
         libusb_close(handle);
     }
 
-    if (!usbAlarm)
+    if (boltek_usb_connected)
     {
         libusb_exit(NULL);
     }
@@ -137,112 +137,86 @@ static void sighandler(int signum)
     exit(0);
 }
 
-
-int init(const unsigned PID)
+enum Init_res
 {
-    struct timeval ut_tv;
-    char outtime[25];
-    struct tm *gtm;
+    ERR_GET_DEV_LIST = -1,
+    INIT_SUCCESS = 0,
+    ERR_OPEN_BOLTEK = 1,
+    ERR_CLAIM_BOLTEK = 2,
+    ERR_NOTFOUND_BOLTEK = 3,
+};
 
 
-    //Pass Interrupt Signal to our handler
+Init_res init(const unsigned PID)
+{
     signal(SIGINT, sighandler);
 
     libusb_init(&ctx);
-    // libusb_set_debug(ctx, 3);
 
-    int cnt = libusb_get_device_list(ctx, &devs);
-    int recnt = 0;
-    if(cnt < 0) {
-        gettimeofday(&ut_tv, NULL);
-        const time_t sec = (time_t)ut_tv.tv_sec;
-        gtm = gmtime(&sec);
-        logger.log(gtm, "Error for get USB devices list");
+    int devs_count = libusb_get_device_list(ctx, &devs);
+    int boltekdevs_count = 0;
 
-        printf("ERR1");
-        return -1;
-    } else {
-        // printf("найдено устройств: %d\n", cnt);
-        for(int i = 0; i < cnt; i++) {  //цикл перебора всех устройств
-            // printdev(devs[i]);
+    if(devs_count < 0) {
+        logger.log("Error: Can't get USB devices list");
+        return ERR_GET_DEV_LIST;
+    } 
+    else 
+    {
+        for(int i = 0; i < devs_count; i++) { 
             libusb_device *dev = devs[i];
 
-            struct libusb_device_descriptor desc; //дескрипторустройства
-            struct libusb_config_descriptor *config;//дескрипторконфигурацииобъекта
-            const struct libusb_interface *inter;
-            const struct libusb_interface_descriptor *interdesc;
-            const struct libusb_endpoint_descriptor *epdesc;
+            struct libusb_device_descriptor desc;
+            struct libusb_config_descriptor *config;
 
             int r = libusb_get_device_descriptor(dev, &desc);
-
             if (r < 0) {
-                // printf("ERR BY GET\n");
+                // logger.log("Error: Can't get %d-th (from %d) device descriptor", i, devs_count);
                 libusb_free_config_descriptor(config);
-            } else {
+            } 
+            else 
+            {
                 static libusb_device_handle *devHandle = NULL;
                 libusb_get_config_descriptor(dev, 0, &config);
                 unsigned char dev_detail[200];
-                int returnStatus = 0;
+
                 memset(dev_detail, 0, sizeof(dev_detail));
 
 
                 int device_open_status = libusb_open(dev, &devHandle);
-                // printf("OPEN STATUS %d;\n",device_open_status);
-                // printf("okay1\n");
-                if (device_open_status == 0) {
 
-                    returnStatus = libusb_get_string_descriptor_ascii(devHandle,
-                                   desc.iSerialNumber, dev_detail, sizeof(dev_detail));
-                    // printf("okay2\n");
+                if (device_open_status == 0) {
+                    int returnStatus = libusb_get_string_descriptor_ascii(devHandle,
+                               desc.iSerialNumber, dev_detail, sizeof(dev_detail));
+
                     if (returnStatus < 0) {
-                        // printf("Error: wrong serial Number\n");
+                        // logger.log("Error: Can't get %d-th (from %d) device SID", i, devs_count);
                     }
                     else {
-                        // printf("Serial Number: %s\n",dev_detail);
-                        // printf("Vendor:Device = %04x:%04x\n", desc.idVendor, desc.idProduct);
                         if (USB_VENDOR_ID == desc.idVendor && PID == desc.idProduct && strcmp(SID, (const char *)dev_detail) == 0) {
-                            // printf("OK\n");
-                            recnt++;
+                            boltekdevs_count++;
                             handle = devHandle;
                             break;
-                        }else{
-                            // printf("CLOSE3\n");
+                        }
+                        else
+                        {
                             libusb_close(devHandle);
                         }
                     }
-                } else
-                {
-                    // libusb_close(devHandle);
                 }
-                // libusb_close(devHandle);
                 libusb_free_config_descriptor(config);
             }
         }
     }
+
     libusb_free_device_list(devs, 1);
 
-
-    // printf("MY DEVICES: %d\n", recnt);
-    if (recnt<1){
-        return 3;
+    if (boltekdevs_count < 1){
+        return ERR_NOTFOUND_BOLTEK;
     }
 
-
-    //Open Device with VendorID and ProductID
-    // handle = libusb_open_device_with_vid_pid(ctx,
-    //          USB_VENDOR_ID, PID);
-    if (!handle) {
-        // perror("device not found");
-        return 1;
-    }
-
-    int r = 1;
-    //Claim Interface 0 from the device
-    // printf("CLAIM\n");
-    r = libusb_claim_interface(handle, 0);
+    int r = libusb_claim_interface(handle, 0);
     if (r < 0) {
-        // usb_claim_interface error
-        return 2;
+        return ERR_CLAIM_BOLTEK;
     }
 
     usb_control_out(0, 0, 0);
@@ -270,7 +244,7 @@ int init(const unsigned PID)
     usb_control_out(0, 1, 0);
     usb_control_out(0, 2, 0);
 
-    return EXIT_SUCCESS;
+    return INIT_SUCCESS;
 }
 
 
@@ -278,15 +252,10 @@ int main(int argc, char *argv[])
 {
     char strBuf[6];
     struct timeval ut_tv;
-    char outtime[25];
     struct tm *gtm;
-    FILE *outfile = NULL;
-    char fn_woprefix[100];
-    char filename[100];
-    char lastfn[100] = "";
     char prefix[100] = "default";
 
-    unsigned PID = 0xf245;
+    unsigned PID = USB_PRODUCT_ID;
     if (argc>1)
     {
         if (strcmp(argv[1],"-h")==0)
@@ -305,24 +274,14 @@ int main(int argc, char *argv[])
         sscanf(argv[3],"%x",&PID);
     }
 
-    int initFlag = init(PID);
-
-    printf("%d\n", initFlag);
-
+    auto initFlag = init(PID);
 
     gettimeofday(&ut_tv, NULL);
     const time_t sec = (time_t)ut_tv.tv_sec;
     const time_t usec = (time_t)ut_tv.tv_usec;
     gtm = gmtime(&sec);
 
-
-    strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
-    sprintf(filename, "%s-%s",prefix,fn_woprefix);
-    strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
-
-
     int j = 0;
-    int rushhour = 0;
     int readRes = 1;
     time_t lastTime = 0;
 
@@ -332,73 +291,38 @@ int main(int argc, char *argv[])
         const time_t sec = (time_t)ut_tv.tv_sec;
         gtm = gmtime(&sec);
 
-        if (initFlag == 0)
+        if (initFlag == INIT_SUCCESS)
         {
             readRes = usb_read();
-            if (usbAlarm)
+            if (!boltek_usb_connected)
             {
-                usbAlarm = !usbAlarm;
-
+                boltek_usb_connected = true;
                 logger.log(gtm, "Usb connected");
-
                 lastTime = sec;
-                strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
-                sprintf(filename, "%s-%s",prefix,fn_woprefix);
                 writer.open();
             }
-        } else {
-            if (!usbAlarm)
+        } 
+        else 
+        {
+            if (boltek_usb_connected)
             {
-                usbAlarm = !usbAlarm;
+                boltek_usb_connected = false;
                 logger.log(gtm, "Usb disconnected");
             }
         }
-        if (readRes == 0 && initFlag == 0)
+
+
+        if (readRes == 0 && initFlag == INIT_SUCCESS)
         {
             for (int i = 0; string[i] != '\0'; i++) {
                 if (string[i] == '$')
                 {
                     if (strlen(strBuf) > 0) {
-
-                        writer.write(std::string(strBuf));
-
                         gettimeofday(&ut_tv, NULL);
-                        const time_t sec = (time_t)ut_tv.tv_sec;
-                        const suseconds_t usec = (time_t)ut_tv.tv_usec;
-
-
-                        gtm = gmtime(&sec);
-                        // if (gtm->tm_sec==0) // End of min (debug)
-                        if (gtm->tm_min==0 && gtm->tm_sec==0) // End of hour
-                        {
-                            if (rushhour == 0)
-                            {
-                                strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
-                                sprintf(filename, "%s-%s",prefix,fn_woprefix);
-                                strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
-                                rushhour = 1;
-                            }
-                        }
-                        else
-                        {
-                            rushhour = 0;
-                        }
-
+   
                         if (strBuf[0] == '+' || strBuf[0] == '-') {
-                            strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
-                            lastTime = sec;
-                            if (strcmp(lastfn,filename) != 0)
-                            {
-                                strcpy(lastfn,filename);
-                                logger.log(gtm, "Start new file %s",filename);
-
-                                if (outfile != NULL)
-                                {
-                                    fclose(outfile);
-                                }
-                                outfile = fopen(filename, "a+");
-                            }
-                            fprintf(outfile, "%s.%06ld\t%s\n", outtime, (long)usec, strBuf);
+                            writer.write(std::string(strBuf));
+                            lastTime = (time_t)ut_tv.tv_sec;
                         }
 
                     }
@@ -419,61 +343,42 @@ int main(int argc, char *argv[])
                     } else {
                         if (sec-lastTime > 1 && lastTime != 0)
                         {
-                            if (!lineAlarm)
+                            if (boltek_signal_connected)
                             {
-                                lineAlarm = 1;
+                                boltek_signal_connected = false;
                                 struct tm *lastgtm = gmtime(&lastTime);
                                 logger.log(lastgtm, "Signal cable disconnected");
                             }
                         }
                         else
                         {
-                            if (lineAlarm)
+                            if (!boltek_signal_connected)
                             {
-                                lineAlarm = 0;
-                                gettimeofday(&ut_tv, NULL);
-                                const time_t sec = (time_t)ut_tv.tv_sec;
-                                gtm = gmtime(&sec);
-      
-                                logger.log(gtm, "Signal cable connected");
-
-                                strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
-                                sprintf(filename, "%s-%s",prefix,fn_woprefix);
+                                boltek_signal_connected = true;
+                                // gettimeofday(&ut_tv, NULL);
+                                // const time_t sec = (time_t)ut_tv.tv_sec;
+                                // gtm = gmtime(&sec);
+                                // logger.log(gtm, "Signal cable connected");
+                                logger.log("Signal cable connected");
+                                writer.open();
                             }
                         }
                     }
                 }
-
             }
         }
         else
         {
-            // printf("CLOSE1\n");
-            // libusb_close(handle);
             libusb_exit(NULL);
             usleep(500000);
             initFlag = init(PID);
-            printf("Init result %d\n", initFlag);
-            gettimeofday(&ut_tv, NULL);
-            const time_t sec = (time_t)ut_tv.tv_sec;
-            gtm = gmtime(&sec);
-            strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
-            sprintf(filename, "%s-%s",prefix,fn_woprefix);
-            printf("run open!\n");
 
-            if (initFlag == 0)
-            {
-                writer.open();
-            }
         }
         usleep(USLEEP_PERIOD);
     }
-    fclose(outfile);
 
-    printf("CLOSE2\n");
     libusb_close(handle);
     libusb_exit(NULL);
 
     return EXIT_SUCCESS;
 }
-

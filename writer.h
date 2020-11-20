@@ -2,6 +2,7 @@
 #include <string>
 #include <cstdarg>
 #include <ctime>
+#include <unistd.h>
 #include <sys/time.h>
 #include "logger.h"
 
@@ -14,6 +15,7 @@ class Writer
 		FILE *m_file_ptr;
 
 		int m_hour_end_count;
+		int m_error_count;
 
 		Logger *m_logger;
 
