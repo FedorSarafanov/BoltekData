@@ -7,8 +7,9 @@
 #include <time.h>
 
 #include "logger.h"
+#include "writer.h"
 
-#include <libusb-1.0/libusb.h>
+#include <libusb-1.0/libusb.h> 
 
 #define USB_VENDOR_ID       0x0403      /* USB vendor ID used by the device
                                          * 0x0483 is STMs ID
@@ -37,7 +38,7 @@ char SID[100] = "E2150533";
 
 
 #define helpData  "Boltek fluxmeter client v0.1\n"\
-                  "F.Kuterin, F.Sarafanov (c) IAPRAS 2020\n\n"\
+                  "F. Kuterin, F. Sarafanov (c) IAPRAS 2020\n\n"\
                   "Use \t./get_data [SID] [PREFIX] [PID],\n where [PID] can be obtained using \n"\
                   "command `lsusb  -d 0x0403: -v | grep idProduct`,\n [PREFIX] -- location string (without whitespaces or dash)\n"\
                   "[SID] can be obtained using command `lsusb  -d 0x0403: -v | grep Serial`.\n"\
@@ -45,6 +46,7 @@ char SID[100] = "E2150533";
 
 
 Logger logger("boltek.new");
+Writer writer(std::string("prefix"), &logger);
 
 /**
  * Read a packet to `string` variable
@@ -120,28 +122,8 @@ void usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t
 }
 
 
-/**
- * on SIGINT: fclose USB interface
- * This still leads to a segfault on my system...
- */
 static void sighandler(int signum)
 {
-    struct timeval ut_tv;
-    char outtime[25];
-    struct tm *gtm;
-
-    FILE *outfile;
-
-    gettimeofday(&ut_tv, NULL);
-    const time_t sec = (time_t)ut_tv.tv_sec;
-    const time_t usec = (time_t)ut_tv.tv_usec;
-    gtm = gmtime(&sec);
-    // strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
-    // logfile = fopen(logname,"a+");
-    // fprintf(logfile, "%s exit\n",outtime);
-    // fclose(logfile);
-
-
     if (handle) {
         libusb_release_interface (handle, 0);
         libusb_close(handle);
@@ -155,10 +137,6 @@ static void sighandler(int signum)
     exit(0);
 }
 
-
-void printdev(libusb_device *dev) {
-    printf("%s\n", "df");
-}
 
 int init(const unsigned PID)
 {
@@ -179,10 +157,6 @@ int init(const unsigned PID)
         gettimeofday(&ut_tv, NULL);
         const time_t sec = (time_t)ut_tv.tv_sec;
         gtm = gmtime(&sec);
-        // strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
-        // logfile = fopen(logname,"a+");
-        // fprintf(logfile, "%s Error in libusb_get_device_list\n",outtime);
-        // fclose(logfile);
         logger.log(gtm, "Error for get USB devices list");
 
         printf("ERR1");
@@ -347,11 +321,6 @@ int main(int argc, char *argv[])
     strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
 
 
-    // logfile = fopen(logname,"a+");
-    // fprintf(logfile, "%s run\n",outtime);
-    // fclose(logfile);
-
-
     int j = 0;
     int rushhour = 0;
     int readRes = 1;
@@ -370,27 +339,18 @@ int main(int argc, char *argv[])
             {
                 usbAlarm = !usbAlarm;
 
-                // strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
-                // logfile = fopen(logname,"a+");
-                // fprintf(logfile, "%s usb connected\n",outtime);
-                // fclose(logfile);
                 logger.log(gtm, "Usb connected");
 
                 lastTime = sec;
                 strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
                 sprintf(filename, "%s-%s",prefix,fn_woprefix);
+                writer.open();
             }
         } else {
             if (!usbAlarm)
             {
                 usbAlarm = !usbAlarm;
-
-                // strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
-                // logfile = fopen(logname,"a+");
-                // fprintf(logfile, "%s usb disconnected\n",outtime);
-                // fclose(logfile);
                 logger.log(gtm, "Usb disconnected");
-
             }
         }
         if (readRes == 0 && initFlag == 0)
@@ -399,6 +359,8 @@ int main(int argc, char *argv[])
                 if (string[i] == '$')
                 {
                     if (strlen(strBuf) > 0) {
+
+                        writer.write(std::string(strBuf));
 
                         gettimeofday(&ut_tv, NULL);
                         const time_t sec = (time_t)ut_tv.tv_sec;
@@ -428,9 +390,6 @@ int main(int argc, char *argv[])
                             if (strcmp(lastfn,filename) != 0)
                             {
                                 strcpy(lastfn,filename);
-                                // logfile = fopen(logname,"a+");
-                                // fprintf(logfile, "%s start new file %s\n",outtime,filename);
-                                // fclose(logfile);
                                 logger.log(gtm, "Start new file %s",filename);
 
                                 if (outfile != NULL)
@@ -465,11 +424,6 @@ int main(int argc, char *argv[])
                                 lineAlarm = 1;
                                 struct tm *lastgtm = gmtime(&lastTime);
                                 logger.log(lastgtm, "Signal cable disconnected");
-                                // strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", lastgtm);
-                                // logfile = fopen(logname,"a+");
-                                // fprintf(logfile, "%s signal cable disconnected\n",outtime);
-                                // fclose(logfile);
-
                             }
                         }
                         else
@@ -480,10 +434,7 @@ int main(int argc, char *argv[])
                                 gettimeofday(&ut_tv, NULL);
                                 const time_t sec = (time_t)ut_tv.tv_sec;
                                 gtm = gmtime(&sec);
-                                // strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
-                                // logfile = fopen(logname,"a+");
-                                // fprintf(logfile, "%s signal cable connected\n",outtime);
-                                // fclose(logfile);
+      
                                 logger.log(gtm, "Signal cable connected");
 
                                 strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
@@ -502,12 +453,18 @@ int main(int argc, char *argv[])
             libusb_exit(NULL);
             usleep(500000);
             initFlag = init(PID);
-
+            printf("Init result %d\n", initFlag);
             gettimeofday(&ut_tv, NULL);
             const time_t sec = (time_t)ut_tv.tv_sec;
             gtm = gmtime(&sec);
             strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
             sprintf(filename, "%s-%s",prefix,fn_woprefix);
+            printf("run open!\n");
+
+            if (initFlag == 0)
+            {
+                writer.open();
+            }
         }
         usleep(USLEEP_PERIOD);
     }
