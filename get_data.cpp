@@ -8,7 +8,7 @@
 
 #include "logger.h"
 #include "writer.h"
-
+ 
 #include <libusb-1.0/libusb.h> 
 
 #define USB_VENDOR_ID       0x0403      /* USB vendor ID used by the device
@@ -157,7 +157,7 @@ Init_res init(const unsigned PID)
     int boltekdevs_count = 0;
 
     if(devs_count < 0) {
-        logger.log("Error: Can't get USB devices list");
+        // logger.log("Error: Can't get USB devices list");
         return ERR_GET_DEV_LIST;
     } 
     else 

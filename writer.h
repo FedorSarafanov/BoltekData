@@ -24,5 +24,6 @@ class Writer
 		~Writer();
 		void open(struct tm *gtm);
 		void open();
-		void write(const std::string &value);
+		struct tm * write(const std::string &value);
+		void flush();
 };

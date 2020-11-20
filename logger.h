@@ -4,6 +4,7 @@
 #include <cstdarg>
 #include <ctime>
 #include <sys/time.h>
+#include <unistd.h>
 
 class Logger
 {

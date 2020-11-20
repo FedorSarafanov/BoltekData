@@ -3,8 +3,14 @@
 Logger::Logger(const std::string &filename)
 {
 	m_log_fn = filename;
-	m_log_file_ptr = fopen(m_log_fn.c_str(),"a+");
-	log("Open log file");
+	if( access(m_log_fn.c_str(), W_OK ) == -1 ) {
+		m_log_file_ptr = stdout;
+		log("Error: Unable access to log file '%s', redirect to stdout",m_log_fn.c_str());
+	}
+	else
+	{
+		m_log_file_ptr = fopen(m_log_fn.c_str(),"a+");
+	}
 }
 
 
