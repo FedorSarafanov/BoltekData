@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
                     if (line.length() == 5 && !isdigit(line[0]))
                     {
                         empty_counter = 0;
-                        printf("CALL WRITE LINE\n");
                         last_write_time = writer.write(line);
                     }
                     line = "";

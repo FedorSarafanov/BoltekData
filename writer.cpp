@@ -21,7 +21,6 @@ Writer::~Writer()
 
 void Writer::open(struct tm *gtm)
 {
-    printf("OPEN_FUNCTION START! %s\n", m_fn.c_str());
 	char fn_woprefix[200];
 	char filename[200];
 
@@ -48,7 +47,6 @@ void Writer::open(struct tm *gtm)
 	    	m_logger->log("Error: Unable to open/create file %s",m_fn.c_str());
     	}
     }
-    printf("OPEN_FUNCTION FINISH! %s\n", m_fn.c_str());
 }
 
 void Writer::open()
@@ -73,7 +71,6 @@ void Writer::flush()
 
 struct tm * Writer::write(const std::string &value) 
 {
-    printf("CALL WRITE! %s\n", m_fn.c_str());
 	struct timeval ut_tv;
 	time_t sec;
 	suseconds_t usec;
@@ -92,19 +89,17 @@ struct tm * Writer::write(const std::string &value)
     }
 
 	if (!m_file_ptr){
-		printf("OPEN\n");
 		Writer::open(gtm);
 	}
 
-	{
-	    strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
+    strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
 
-		if( access(m_fn.c_str(), F_OK ) == -1 ) {
-			m_logger->log("Error: Unable to write to file %d",m_fn.length());
-		    Writer::open(gtm);
-		}
-
-		fprintf(m_file_ptr, "%s.%06ld\t%s\n", outtime, (long)usec, value.c_str());
+	if( access(m_fn.c_str(), F_OK ) == -1 ) {
+		m_logger->log("Error: Unable to write to file %d",m_fn.length());
+	    Writer::open(gtm);
 	}
+
+	fprintf(m_file_ptr, "%s.%06ld\t%s\n", outtime, (long)usec, value.c_str());
+
 	return gtm;
 }
