@@ -80,13 +80,13 @@ void Boltek::usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, 
 Boltek::Init_res Boltek::init(const unsigned PID)
 {
     // signal(SIGINT, sighandler);
-     libusb_init(&ctx);
+    libusb_init(&ctx);
 
     int devs_count = libusb_get_device_list(ctx, &devs);
     int boltekdevs_count = 0;
 
     if(devs_count < 0) {
-        // logger.log("Error: Can't get USB devices list");
+        // m_logger->log("Error: Can't get USB devices list");
         return ERR_GET_DEV_LIST;
     } 
     else 
@@ -178,13 +178,13 @@ Boltek::Init_res Boltek::init(const unsigned PID)
     return INIT_SUCCESS;
 }
 
-Boltek::Boltek(std::string SD, Logger *logger, Writer *writer)
+Boltek::Boltek(std::string SD, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
 {
     m_logger = logger;
     m_writer = writer;
+    m_quit = mquit;
     SID = SD;
     m_init_flag = Boltek::init(USB_PRODUCT_ID);
-    // printf("%d\n", m_init_flag);
 }
 
 Boltek::~Boltek()
@@ -197,7 +197,6 @@ Boltek::~Boltek()
             libusb_exit(NULL);
         }
     }
-
 }
 
 std::string Boltek::read_data()
@@ -205,6 +204,9 @@ std::string Boltek::read_data()
     m_boltek_usb_connected = true;
     while (m_init_flag != INIT_SUCCESS)
     {
+        if( m_quit->load() ) {
+            return std::string("");
+        }
         if (m_boltek_usb_connected)
         {
             m_logger->log("Usb disconnected");

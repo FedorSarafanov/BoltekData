@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <ctime>
+#include <atomic>
 
 #include "logger.h"
 #include "writer.h"
@@ -23,11 +24,28 @@ char SID[100] = "E2150533";
                   "[SID] can be obtained using command `lsusb  -d 0x0403: -v | grep Serial`.\n"\
                   "\nYou can see log in file 'boltek.log'" 
 
+std::atomic<bool> quit(false);
+
+void got_signal(int)
+{
+    quit.store(true);
+}
+
+
 int main(int argc, char *argv[])
 {
+
+    // SIGINT sighandler
+    struct sigaction sa;
+    memset( &sa, 0, sizeof(sa) );
+    sa.sa_handler = got_signal;
+    sigfillset(&sa.sa_mask);
+    sigaction(SIGINT,&sa,NULL);
+
+
     Logger logger("boltek.log");
     Writer writer(std::string("test"), &logger);
-    Boltek boltek(SID, &logger, &writer);
+    Boltek boltek(SID, &logger, &writer, &quit);
 
     std::string line("");
 
@@ -77,5 +95,9 @@ int main(int argc, char *argv[])
             }
         }
         usleep(USLEEP_PERIOD);
+        if( quit.load() ) {
+            logger.log("Received SIGINT");
+            break;
+        }
     }
 }

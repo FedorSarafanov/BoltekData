@@ -5,6 +5,7 @@
 #include <ctime>
 #include <unistd.h>
 #include <sys/time.h>
+#include <atomic>
 
 #include <libusb-1.0/libusb.h> 
 #include "logger.h"
@@ -30,6 +31,7 @@ class Boltek
 		libusb_context *ctx = NULL;
 		libusb_device_handle *handle;
 		libusb_device **devs;
+		std::atomic<bool> *m_quit;
 
 		uint8_t receive_buf[BUFFER_SIZE];
 		uint8_t transfer_buf[BUFFER_SIZE];
@@ -54,7 +56,7 @@ class Boltek
 		Init_res m_init_flag = DEFAULT;
 		Init_res init(const unsigned PID);
 	public:
-		Boltek(std::string SID, Logger *logger, Writer *writer);
+		Boltek(std::string SID, Logger *logger, Writer *writer, std::atomic<bool> *quit);
 		~Boltek();
 		std::string read_data(void);
 };
