@@ -35,6 +35,25 @@ void got_signal(int)
 int main(int argc, char *argv[])
 {
 
+    unsigned PID = 0xf245;
+    if (argc>1)
+    {
+        if (strcmp(argv[1],"-h")==0)
+        {
+            printf("%s\n", helpData);
+            return EXIT_SUCCESS;
+        }
+        sscanf(argv[1],"%s",&SID);
+    }
+    if (argc>2)
+    {
+        sscanf(argv[2],"%s",&prefix);
+    }
+    if (argc>3)
+    {
+        sscanf(argv[3],"%x",&PID);
+    }
+
     // SIGINT sighandler
     struct sigaction sa;
     memset( &sa, 0, sizeof(sa) );
