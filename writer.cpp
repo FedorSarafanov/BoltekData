@@ -1,7 +1,7 @@
 #include "writer.h"  
 
 
-Writer::Writer(const std::string &prefix, Logger *logger)
+Writer::Writer(const std::string &prefix, Logger *logger, std::string folder)
 {
 	m_prefix = prefix;
 	m_hour_end_count = 0;
@@ -9,6 +9,7 @@ Writer::Writer(const std::string &prefix, Logger *logger)
 	m_logger = logger;
 	m_error_count = 0;
 	m_file_ptr = nullptr;
+	m_folder = folder;
 }
 
 Writer::~Writer()
@@ -25,7 +26,7 @@ void Writer::open(struct tm *gtm)
 	char filename[200];
 
     strftime(fn_woprefix, sizeof(fn_woprefix), "%Y-%m-%d-%H:%M:%S.txt", gtm);
-    sprintf(filename, "data/%s-%s", m_prefix.c_str(), fn_woprefix);
+    sprintf(filename, "%s/%s-%s", m_folder.c_str(), m_prefix.c_str(), fn_woprefix);
 
     if (std::string(filename) != m_fn)
     {
@@ -41,7 +42,10 @@ void Writer::open(struct tm *gtm)
 	    }		
     }
     if (!m_file_ptr){
-    	m_error_count++;
+    	if (m_error_count < 1000)
+    	{
+	    	m_error_count++;
+    	}
     	if (m_error_count == 1)
     	{
 	    	m_logger->log("Error: Unable to open/create file %s",m_fn.c_str());
@@ -94,12 +98,18 @@ struct tm * Writer::write(const std::string &value)
 
     strftime(outtime, sizeof(outtime), "%Y-%m-%d-%H:%M:%S", gtm);
 
-	if( access(m_fn.c_str(), F_OK ) == -1 ) {
-		m_logger->log("Error: Unable to write to file %d",m_fn.length());
+	if( access(m_fn.c_str(), F_OK ) == -1 ||  m_file_ptr == nullptr) {
+		if (m_error_count == 1)
+		{
+			m_logger->log("Error: Unable to write to file %s",m_fn.c_str());
+		}
 	    Writer::open(gtm);
 	}
 
-	fprintf(m_file_ptr, "%s.%06ld\t%s\n", outtime, (long)usec, value.c_str());
+	if (m_file_ptr)
+	{
+		fprintf(m_file_ptr, "%s.%06ld\t%s\n", outtime, (long)usec, value.c_str());
+	}
 
 	return gtm;
 }

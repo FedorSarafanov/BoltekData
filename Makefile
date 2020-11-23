@@ -1,9 +1,8 @@
 CFLAGS=-O0
 
-test_boltek: test_boltek.o logger.o writer.o boltek.o
+
+test_boltek: test_boltek.o logger.o writer.o boltek.o config.o
 	g++ -o $@ $^ -lusb-1.0
-
-
 
 get_data: get_data.o logger.o writer.o boltek.o
 	g++ -o $@ $^ -lusb-1.0
@@ -20,7 +19,10 @@ writer.o: writer.cpp
 boltek.o: boltek.cpp
 	g++ -c $^
 
-test_boltek.o: test_boltek.cpp
+
+config.o: config.cpp
 	g++ -c $^
 
+test_boltek.o: test_boltek.cpp
+	g++ -c $^
 

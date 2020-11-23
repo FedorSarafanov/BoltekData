@@ -10,19 +10,17 @@
 #include "logger.h"
 #include "writer.h"
 #include "boltek.h"
+#include "config.h"
 
 #include <libusb-1.0/libusb.h> 
 
 #define USLEEP_PERIOD 50000
-char logname[15] = "boltek.log";
-char SID[100] = "E2150533"; 
 
-#define helpData  "Boltek fluxmeter client v0.1\n"\
+#define helpData  "Boltek fluxmeter client v1.0\n"\
                   "F. Kuterin, F. Sarafanov (c) IAPRAS 2020\n\n"\
-                  "Use \t./get_data [SID] [PREFIX] [PID],\n where [PID] can be obtained using \n"\
+                  "Use \t./get_data --sid=[SID] --prefix=[PREFIX] --pid=[PID],\n where [PID] can be obtained using \n"\
                   "command `lsusb  -d 0x0403: -v | grep idProduct`,\n [PREFIX] -- location string (without whitespaces or dash)\n"\
-                  "[SID] can be obtained using command `lsusb  -d 0x0403: -v | grep Serial`.\n"\
-                  "\nYou can see log in file 'boltek.log'" 
+                  "[SID] can be obtained using command `lsusb  -d 0x0403: -v | grep Serial`.\n"
 
 std::atomic<bool> quit(false);
 
@@ -35,26 +33,25 @@ void got_signal(int)
 int main(int argc, char *argv[])
 {
 
-    unsigned PID = 0xf245;
-    if (argc>1)
-    {
-        if (strcmp(argv[1],"-h")==0)
-        {
-            printf("%s\n", helpData);
-            return EXIT_SUCCESS;
-        }
-        sscanf(argv[1],"%s",&SID);
-    }
-    if (argc>2)
-    {
-        sscanf(argv[2],"%s",&prefix);
-    }
-    if (argc>3)
-    {
-        sscanf(argv[3],"%x",&PID);
+    Config conf(argc, argv, "boltek.ini");
+    if (conf.get_value("help") || conf.get_value("h")){
+        printf(helpData);
+        return EXIT_SUCCESS;
     }
 
-    // SIGINT sighandler
+    char SID[100]; 
+    std::string S_SID = conf.get_value("sid", "E2150533");
+    sscanf(S_SID.c_str(),"%s",&SID);
+
+    unsigned PID;
+    std::string S_PID = conf.get_value("pid", "0xf245");
+    sscanf(S_PID.c_str(),"%x",&PID);
+
+    std::string prefix = conf.get_value("prefix", "default");
+    std::string log_fn = conf.get_value("log", "boltek.log");
+    std::string data_folder = conf.get_value("folder", "data");
+
+
     struct sigaction sa;
     memset( &sa, 0, sizeof(sa) );
     sa.sa_handler = got_signal;
@@ -62,8 +59,8 @@ int main(int argc, char *argv[])
     sigaction(SIGINT,&sa,NULL);
 
 
-    Logger logger("boltek.log");
-    Writer writer(std::string("test"), &logger);
+    Logger logger(log_fn);
+    Writer writer(prefix, &logger, data_folder);
     Boltek boltek(SID, &logger, &writer, &quit);
 
     std::string line("");

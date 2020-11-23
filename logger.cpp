@@ -7,7 +7,7 @@ Logger::Logger(const std::string &filename)
 
 	if( access(m_log_fn.c_str(), W_OK ) == -1 || m_log_file_ptr == nullptr) {
 		m_log_file_ptr = stdout;
-		log("Error: Unable access to log file '%s', redirect to stdout",m_log_fn.c_str());
+		log("Notify: Unable access to log file '%s', redirect to stdout",m_log_fn.c_str());
 	}
 	log("Start logging");
 }

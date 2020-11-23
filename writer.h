@@ -16,11 +16,12 @@ class Writer
 
 		int m_hour_end_count;
 		int m_error_count;
+		std::string m_folder;
 
 		Logger *m_logger;
 
 	public:
-		Writer(const std::string &prefix, Logger *logger);
+		Writer(const std::string &prefix, Logger *logger, std::string folder);
 		~Writer();
 		void open(struct tm *gtm);
 		void open();
