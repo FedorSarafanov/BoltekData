@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     bool boltek_signal_connected = true;
 
     long int empty_counter = 0;
-    struct tm *last_write_time;
+    struct tm *last_write_time = nullptr;
 
     while(true){
         empty_counter++;
@@ -98,7 +98,10 @@ int main(int argc, char *argv[])
             if (boltek_signal_connected)
             {
                 boltek_signal_connected = false;
-                logger.log(last_write_time, "Signal cable disconnected");
+                if (last_write_time)
+                {
+                    logger.log(last_write_time, "Signal cable disconnected");
+                }
             }
         }
         if (empty_counter == 0)
