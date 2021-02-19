@@ -1,0 +1,14 @@
+2020-11-23-09:19:37	Start logging
+2020-11-23-09:19:37	Usb disconnected
+2020-11-23-09:19:38	Received SIGINT
+2020-11-23-09:19:38	Finish logging
+2020-11-23-09:49:11	Start logging
+2020-11-23-09:49:11	Error: Unable to open/create file ../data/default-2020-11-23-09:49:11.txt
+2020-11-23-09:49:11	Error: Unable to write to file ../data/default-2020-11-23-09:49:11.txt
+2020-11-23-09:49:24	Received SIGINT
+2020-11-23-09:49:24	Finish logging
+2020-11-23-09:49:27	Start logging
+2020-11-23-09:49:28	Open new file data/default-2020-11-23-09:49:28.txt
+2020-11-23-09:55:32	Usb disconnected
+2020-11-23-10:07:46	Received SIGINT
+2020-11-23-10:07:46	Finish logging
