@@ -4,9 +4,9 @@
 #include <unistd.h>   /* For open(), create() */
 
 
-Boltek_tty::Init_res Boltek_tty::init(const unsigned PID)
+Boltek_tty::Init_res Boltek_tty::init(std::string tty_address)
 {
-    tty_fd = open(TERMINAL, O_RDWR);
+    tty_fd = open(tty_address.c_str(), O_RDWR);
 
     struct termios tty;
 
@@ -54,13 +54,14 @@ Boltek_tty::Init_res Boltek_tty::init(const unsigned PID)
     return INIT_SUCCESS;
 }
 
-Boltek_tty::Boltek_tty(std::string SD, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
+Boltek_tty::Boltek_tty(std::string tty_address, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
 {
     m_logger = logger;
     m_writer = writer;
     m_quit = mquit;
-    SID = SD;
-    m_init_flag = Boltek::init(USB_PRODUCT_ID);
+    m_tty_address = tty_address;
+    // m_logger->log("%s",tty_address.c_str());
+    m_init_flag = Boltek_tty::init(tty_address);
 }
 
 Boltek_tty::~Boltek_tty()
@@ -85,7 +86,7 @@ std::string Boltek_tty::read_data()
             m_boltek_usb_connected = false;
         }
         usleep(500000);
-        m_init_flag = Boltek::init(USB_PRODUCT_ID);
+        m_init_flag = Boltek_tty::init(m_tty_address);
     }
     if (!m_boltek_usb_connected){
         m_boltek_usb_connected = true;

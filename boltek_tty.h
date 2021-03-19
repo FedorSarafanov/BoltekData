@@ -26,7 +26,7 @@
 class Boltek_tty
 {
 	private:
-		std::string SID;
+		std::string m_tty_address;
 		Logger *m_logger;
 		Writer *m_writer;
 
@@ -52,9 +52,9 @@ class Boltek_tty
 		    ERR_NOTFOUND_BOLTEK = 3,
 		};
 		Init_res m_init_flag = DEFAULT;
-		Init_res init(const unsigned PID);
+		Init_res init(std::string tty_address);
 	public:
-		Boltek_tty(std::string SID, Logger *logger, Writer *writer, std::atomic<bool> *quit);
+		Boltek_tty(std::string tty_address, Logger *logger, Writer *writer, std::atomic<bool> *quit);
 		~Boltek_tty();
 		std::string read_data(void);
 };

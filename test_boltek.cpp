@@ -9,7 +9,8 @@
 
 #include "logger.h"
 #include "writer.h"
-#include "boltek_com.h"
+#include "boltek_tty.h"
+#include "boltek.h"
 #include "config.h"
 
 #include <libusb-1.0/libusb.h> 
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
     std::string prefix = conf.get_value("prefix", "default");
     std::string log_fn = conf.get_value("log", "boltek.log");
     std::string data_folder = conf.get_value("folder", "data");
-
+    std::string tty_address = conf.get_value("tty", "none"); //BOLTEK340_USBCOM
 
     struct sigaction sa;
     memset( &sa, 0, sizeof(sa) );
@@ -61,66 +62,102 @@ int main(int argc, char *argv[])
 
     Logger logger(log_fn);
     Writer writer(prefix, &logger, data_folder);
-    Boltek boltek(SID, &logger, &writer, &quit);
 
-    std::string line("");
 
-    bool boltek_signal_connected = true;
+    if (tty_address == "none"){
+        Boltek boltek(SID, &logger, &writer, &quit);
 
-    long int empty_counter = 0;
-    struct tm *last_write_time = nullptr;
+        bool boltek_signal_connected = true;
+        long int empty_counter = 0;
 
-    while(true){
-        empty_counter++;
-        for (auto symbol : boltek.read_data())
-        {
-            switch (symbol){
-                case '$':
-                    if (line.length() == 5 && !isdigit(line[0]))
-                    {
-                        empty_counter = 0;
-                        last_write_time = writer.write(line);
-                    }
-                    line = "";
-                    break;
-                case '+':
-                case '-':
-                    line += symbol;
-                    break;
-                default:
-                    if (isdigit(symbol) && line.length()<5){
+
+        std::string line("");
+        struct tm *last_write_time = nullptr;
+        while(true){
+            empty_counter++;
+            for (auto symbol : boltek.read_data())
+            {
+                switch (symbol){
+                    case '$':
+                        if (line.length() == 5 && !isdigit(line[0]))
+                        {
+                            empty_counter = 0;
+                            last_write_time = writer.write(line);
+                        }
+                        line = "";
+                        break;
+                    case '+':
+                    case '-':
                         line += symbol;
+                        break;
+                    default:
+                        if (isdigit(symbol) && line.length()<5){
+                            line += symbol;
+                        }
+                }
+            }
+
+            if (empty_counter > 1000) { empty_counter = 10; }
+            if (empty_counter > 5) {
+                if (boltek_signal_connected)
+                {
+                    boltek_signal_connected = false;
+                    if (last_write_time)
+                    {
+                        logger.log(last_write_time, "Signal cable disconnected");
+                        writer.flush();
                     }
+                }
+            }
+            if (empty_counter == 0)
+            {
+                if (!boltek_signal_connected)
+                {
+                    boltek_signal_connected = true;
+                    logger.log(last_write_time, "Signal cable connected");
+                    writer.open();
+                }
+            }
+
+            usleep(USLEEP_PERIOD);
+            if( quit.load() ) {
+                logger.log("Received SIGINT");
+                break;
             }
         }
+    }
+    else
+    {
+        Boltek_tty boltek(tty_address, &logger, &writer, &quit);
 
-        // for libusb
-        
-        // if (empty_counter > 1000) { empty_counter = 10; }
-        // if (empty_counter > 5) {
-        //     if (boltek_signal_connected)
-        //     {
-        //         boltek_signal_connected = false;
-        //         if (last_write_time)
-        //         {
-        //             logger.log(last_write_time, "Signal cable disconnected");
-        //             writer.flush();
-        //         }
-        //     }
-        // }
-        // if (empty_counter == 0)
-        // {
-        //     if (!boltek_signal_connected)
-        //     {
-        //         boltek_signal_connected = true;
-        //         logger.log(last_write_time, "Signal cable connected");
-        //         writer.open();
-        //     }
-        // }
-        usleep(USLEEP_PERIOD);
-        if( quit.load() ) {
-            logger.log("Received SIGINT");
-            break;
-        }
+        std::string line("");
+        while(true){
+            for (auto symbol : boltek.read_data())
+            {
+                switch (symbol){
+                    case '$':
+                        if (line.length() == 5 && !isdigit(line[0]))
+                        {
+                            writer.write(line);
+                        }
+                        line = "";
+                        break;
+                    case '+':
+                    case '-':
+                        line += symbol;
+                        break;
+                    default:
+                        if (isdigit(symbol) && line.length()<5){
+                            line += symbol;
+                        }
+                }
+            }
+
+            usleep(USLEEP_PERIOD);
+            if( quit.load() ) {
+                logger.log("Received SIGINT");
+                break;
+            }
+        }        
     }
 }

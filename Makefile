@@ -2,7 +2,7 @@ CFLAGS=-O0
 
 
 # test_boltek: test_boltek.o logger.o writer.o boltek.o config.o
-test_boltek: test_boltek.o logger.o writer.o boltek_com.o config.o
+test_boltek: test_boltek.o logger.o writer.o boltek_tty.o boltek.o config.o
 	g++ -o $@ $^ -lusb-1.0
 
 get_data: get_data.o logger.o writer.o boltek.o
