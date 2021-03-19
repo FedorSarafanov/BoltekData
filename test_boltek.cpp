@@ -9,15 +9,15 @@
 
 #include "logger.h"
 #include "writer.h"
-#include "boltek.h"
+#include "boltek_com.h"
 #include "config.h"
 
 #include <libusb-1.0/libusb.h> 
 
-#define USLEEP_PERIOD 50000
+#define USLEEP_PERIOD 1000
 
 #define helpData  "Boltek fluxmeter client v1.0\n"\
-                  "F. Kuterin, F. Sarafanov (c) IAPRAS 2020\n\n"\
+                  "F. Kuterin, F. Sarafanov (c) IAPRAS 2020-2021\n\n"\
                   "Use \t./get_data --sid=[SID] --prefix=[PREFIX] --pid=[PID],\n where [PID] can be obtained using \n"\
                   "command `lsusb  -d 0x0403: -v | grep idProduct`,\n [PREFIX] -- location string (without whitespaces or dash)\n"\
                   "[SID] can be obtained using command `lsusb  -d 0x0403: -v | grep Serial`.\n"
@@ -93,26 +93,30 @@ int main(int argc, char *argv[])
                     }
             }
         }
-        if (empty_counter > 1000) { empty_counter = 10; }
-        if (empty_counter > 5) {
-            if (boltek_signal_connected)
-            {
-                boltek_signal_connected = false;
-                if (last_write_time)
-                {
-                    logger.log(last_write_time, "Signal cable disconnected");
-                }
-            }
-        }
-        if (empty_counter == 0)
-        {
-            if (!boltek_signal_connected)
-            {
-                boltek_signal_connected = true;
-                logger.log(last_write_time, "Signal cable connected");
-                writer.open();
-            }
-        }
+
+        // for libusb
+        
+        // if (empty_counter > 1000) { empty_counter = 10; }
+        // if (empty_counter > 5) {
+        //     if (boltek_signal_connected)
+        //     {
+        //         boltek_signal_connected = false;
+        //         if (last_write_time)
+        //         {
+        //             logger.log(last_write_time, "Signal cable disconnected");
+        //             writer.flush();
+        //         }
+        //     }
+        // }
+        // if (empty_counter == 0)
+        // {
+        //     if (!boltek_signal_connected)
+        //     {
+        //         boltek_signal_connected = true;
+        //         logger.log(last_write_time, "Signal cable connected");
+        //         writer.open();
+        //     }
+        // }
         usleep(USLEEP_PERIOD);
         if( quit.load() ) {
             logger.log("Received SIGINT");
