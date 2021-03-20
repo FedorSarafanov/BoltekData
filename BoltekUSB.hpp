@@ -26,7 +26,7 @@
 class BoltekUSB : public BoltekDevice
 {
 	private:
-		std::string SID;
+		std::string m_SID;
 		Logger *m_logger;
 		Writer *m_writer;
 
@@ -39,14 +39,14 @@ class BoltekUSB : public BoltekDevice
 		uint8_t transfer_buf[BUFFER_SIZE];
 		char m_buf[BUFFER_SIZE];
 
-		int usb_write(void);
+		int usb_write(void); 
 		void usb_control_out(uint8_t bRequest, uint16_t wValue, uint16_t wIndex);
 		void usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength);
 		int usb_read(void);
 		InitialisationStatus m_init_flag = DEFAULT;
-		InitialisationStatus init(const unsigned PID);		
+		InitialisationStatus init(const unsigned &PID);		
 	public:
-		BoltekUSB(std::string SID, Logger *logger, Writer *writer, std::atomic<bool> *quit);
+		BoltekUSB(const std::string &SID, Logger *logger, Writer *writer, std::atomic<bool> *quit);
 		~BoltekUSB() override;
 		virtual std::string read_data() override;
 };

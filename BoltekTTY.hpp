@@ -25,10 +25,10 @@ class BoltekTTY : public BoltekDevice
 
 
 		InitialisationStatus m_init_status = DEFAULT;
-		InitialisationStatus init(std::string tty_address);
+		InitialisationStatus init(const std::string &tty_address);
 
 	public:
-		BoltekTTY(std::string tty_address, Logger *logger, Writer *writer, std::atomic<bool> *quit);
+		BoltekTTY(const std::string &tty_address, Logger *logger, Writer *writer, std::atomic<bool> *quit);
 		~BoltekTTY() override;
 		virtual std::string read_data() override;
 };

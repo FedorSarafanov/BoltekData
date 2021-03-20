@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         for (auto symbol : boltek_device->read_data())
         {
             switch (symbol)
-            {
+            { 
                 case '$':
                     if (line.length() == 5 && !isdigit(line[0]))
                     {

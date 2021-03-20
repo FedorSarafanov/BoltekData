@@ -1,7 +1,7 @@
 #include "BoltekTTY.hpp"
 
 
-BoltekTTY::InitialisationStatus BoltekTTY::init(std::string tty_address)
+BoltekTTY::InitialisationStatus BoltekTTY::init(const std::string &tty_address)
 {
     m_tty_fd = open(tty_address.c_str(), O_RDWR);
 
@@ -51,7 +51,7 @@ BoltekTTY::InitialisationStatus BoltekTTY::init(std::string tty_address)
     return INIT_SUCCESS;
 }
 
-BoltekTTY::BoltekTTY(std::string tty_address, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
+BoltekTTY::BoltekTTY(const std::string &tty_address, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
 {
     m_logger = logger;
     m_writer = writer;

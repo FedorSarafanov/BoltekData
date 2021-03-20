@@ -76,7 +76,7 @@ void BoltekUSB::usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wInde
 
 
 
-BoltekUSB::InitialisationStatus BoltekUSB::init(const unsigned PID)
+BoltekUSB::InitialisationStatus BoltekUSB::init(const unsigned &PID)
 {
     // signal(SIGINT, sighandler);
     libusb_init(&ctx);
@@ -119,7 +119,7 @@ BoltekUSB::InitialisationStatus BoltekUSB::init(const unsigned PID)
                         // m_logger->log("Error: Can't get %d-th (from %d) device SID", i, devs_count);
                     }
                     else {
-                        if (USB_VENDOR_ID == desc.idVendor && PID == desc.idProduct && strcmp(SID.c_str(), (const char *)dev_detail) == 0) {
+                        if (USB_VENDOR_ID == desc.idVendor && PID == desc.idProduct && strcmp(m_SID.c_str(), (const char *)dev_detail) == 0) {
                             // m_logger->log("%d,%d", desc.idVendor,desc.idProduct);
                             boltekdevs_count++;
                             handle = devHandle;
@@ -176,12 +176,12 @@ BoltekUSB::InitialisationStatus BoltekUSB::init(const unsigned PID)
     return INIT_SUCCESS;
 }
 
-BoltekUSB::BoltekUSB(std::string SD, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
+BoltekUSB::BoltekUSB(const std::string &SID, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
 {
     m_logger = logger;
     m_writer = writer;
     m_quit = mquit;
-    SID = SD;
+    m_SID = SID;
     m_init_flag = BoltekUSB::init(USB_PRODUCT_ID);
 }
 
