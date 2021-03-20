@@ -12,8 +12,8 @@ int BoltekUSB::usb_read(void)
         return -1;
     }
     else {
-        memset(buf, 0, sizeof(buf));
-        strncpy(buf, (const char*)receive_buf, nread);
+        memset(m_buf, 0, sizeof(m_buf));
+        strncpy(m_buf, (const char*)receive_buf, nread);
         return 0;
     }
 }
@@ -85,7 +85,6 @@ BoltekUSB::InitialisationStatus BoltekUSB::init(const unsigned PID)
     int boltekdevs_count = 0;
 
     if(devs_count < 0) {
-        // m_logger->log("Error: Can't get USB devices list");
         return ERR_GET_DEV_LIST;
     } 
     else 
@@ -191,7 +190,7 @@ BoltekUSB::~BoltekUSB()
 	if (m_init_flag == INIT_SUCCESS) { 
         libusb_release_interface (handle, 0);
         libusb_close(handle);
-        if (m_boltek_usb_connected)
+        if (m_usb_is_connected)
         {
             libusb_exit(NULL);
         }
@@ -200,24 +199,24 @@ BoltekUSB::~BoltekUSB()
 
 std::string BoltekUSB::read_data()
 {
-    m_boltek_usb_connected = true;
+    m_usb_is_connected = true;
     while (m_init_flag != INIT_SUCCESS)
     {
         if( m_quit->load() ) {
             return std::string("");
         }
-        if (m_boltek_usb_connected)
+        if (m_usb_is_connected)
         {
             m_logger->log("Usb disconnected");
             m_writer->flush();
-            m_boltek_usb_connected = false;
+            m_usb_is_connected = false;
         }
         libusb_exit(NULL);
         usleep(500000);        
         m_init_flag = BoltekUSB::init(USB_PRODUCT_ID);
     }
-    if (!m_boltek_usb_connected){
-        m_boltek_usb_connected = true;
+    if (!m_usb_is_connected){
+        m_usb_is_connected = true;
         m_logger->log("Usb connected");
         m_writer->open();
     }
@@ -231,7 +230,36 @@ std::string BoltekUSB::read_data()
     }
     else
     {
-        result = std::string(buf);
+        result = std::string(m_buf);
+    }
+
+
+    if (result.length() > 0)
+    {      
+        if (!m_cable_is_connected)
+        {
+            m_cable_is_connected = true;
+            m_logger->log("Signal cable connected");
+            
+            if (m_usb_is_connected)
+            {
+                m_writer->open();
+            }
+        }
+    }
+    else
+    {
+        if (m_cable_is_connected)
+        {
+            m_cable_is_connected = false;
+            
+            if( !m_quit->load() ) 
+            {
+                m_logger->log("Signal cable disconnected");
+            }
+
+            m_writer->flush();
+        }
     }
     return result;
 }

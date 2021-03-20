@@ -17,4 +17,6 @@ class BoltekDevice
 		    ERR_CLAIM_BOLTEK = 2,
 		    ERR_NOTFOUND_BOLTEK = 3,
 		};
+		bool m_usb_is_connected = true;
+		bool m_cable_is_connected = true;
 };

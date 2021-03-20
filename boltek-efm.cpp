@@ -6,21 +6,22 @@
 #include <signal.h>
 #include <atomic>
 
+#include "Config.hpp"
 #include "Logger.hpp"
 #include "Writer.hpp"
+
 #include "BoltekDevice.hpp"
 #include "BoltekTTY.hpp"
 #include "BoltekUSB.hpp"
-#include "Config.hpp"
 
-
-#define USLEEP_PERIOD 1000
-
-#define helpData  "Boltek fluxmeter client v1.0\n"\
+#define READ_DATA_DELAY_US 1000
+#define HELP_TEXT  "Boltek fluxmeter client v1.1\n"\
                   "F. Kuterin, F. Sarafanov (c) IAPRAS 2020-2021\n\n"\
-                  "Use \t./get_data --sid=[SID] --prefix=[PREFIX] --pid=[PID],\n where [PID] can be obtained using \n"\
+                  "Use \t./boltek-efm --sid=[SID] --prefix=[PREFIX] --pid=[PID],\n where [PID] can be obtained using \n"\
                   "command `lsusb  -d 0x0403: -v | grep idProduct`,\n [PREFIX] -- location string (without whitespaces or dash)\n"\
                   "[SID] can be obtained using command `lsusb  -d 0x0403: -v | grep Serial`.\n"
+
+
 
 std::atomic<bool> quit(false);
 
@@ -29,13 +30,14 @@ void got_signal(int)
     quit.store(true);
 }
 
-
+ 
 int main(int argc, char *argv[])
 {
 
-    Config config(argc, argv, "boltek.ini");
-    if (config.get_value("help") || config.get_value("h")){
-        printf(helpData);
+    Config config(argc, argv, "boltek-efm.ini");
+    if (config.get_value("help") || config.get_value("h"))
+    {
+        printf(HELP_TEXT);
         return EXIT_SUCCESS;
     }
 
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
     sscanf(S_PID.c_str(),"%x",&PID);
 
     std::string prefix = config.get_value("prefix", "default");
-    std::string log_fn = config.get_value("log", "boltek.log");
+    std::string log_fn = config.get_value("log", "boltek-efm.log");
     std::string data_folder = config.get_value("folder", "data");
     std::string tty_address = config.get_value("tty", "none");
 
@@ -96,7 +98,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        usleep(USLEEP_PERIOD);
+        usleep(READ_DATA_DELAY_US);
 
         if ( quit.load() ) 
         {
@@ -104,6 +106,7 @@ int main(int argc, char *argv[])
             logger.log("Received SIGINT");
             break;
         }
-    }       
+    }
+    
     return EXIT_SUCCESS;
 }

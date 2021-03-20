@@ -1,7 +1,7 @@
 CFLAGS=-O0
 
 
-main: main.o Logger.o Writer.o Config.o BoltekTTY.o BoltekUSB.o
+boltek-efm: boltek-efm.o Logger.o Writer.o Config.o BoltekTTY.o BoltekUSB.o
 	g++ -o $@ $^ -lusb-1.0
 	g++ BoltekEmulator.cpp -o BoltekEmulator -lutil
 

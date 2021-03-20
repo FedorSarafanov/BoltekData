@@ -1,12 +1,4 @@
-#include <atomic>
-#include <termios.h>
-#include <fcntl.h> 
-#include <unistd.h>
-#include <cstring>
-
 #include "BoltekTTY.hpp"
-
-
 
 
 BoltekTTY::InitialisationStatus BoltekTTY::init(std::string tty_address)
@@ -80,22 +72,28 @@ std::string BoltekTTY::read_data()
     m_usb_is_connected = true;
     while (m_init_status != INIT_SUCCESS)
     {
-        if( m_quit->load() ) {
+        if( m_quit->load() )
+        {
             return std::string("");
         }
+
         if (m_usb_is_connected)
         {
             m_logger->log("Usb disconnected");
             m_writer->flush();
             m_usb_is_connected = false;
         }
+
         usleep(500000);
         m_init_status = BoltekTTY::init(m_tty_address);
     }
-    if (!m_usb_is_connected){
+    if (!m_usb_is_connected)
+    {
         m_usb_is_connected = true;
         m_logger->log("Usb connected");
-        if (m_cable_is_connected){
+        
+        if (m_cable_is_connected)
+        {
             m_writer->open();
         }
     }
@@ -104,29 +102,39 @@ std::string BoltekTTY::read_data()
     int rdlen = read(m_tty_fd, m_buf, sizeof(m_buf)-1);
 
     std::string result("");
+    
     if (isatty(m_tty_fd) == 0)
     {
         m_init_status = DEFAULT;
         return result;
     }
+
     if (rdlen > 0)
     {
         result = std::string(m_buf);
-        if (!m_cable_is_connected){
+        
+        if (!m_cable_is_connected)
+        {
             m_cable_is_connected = true;
             m_logger->log("Signal cable connected");
-            if (m_usb_is_connected){
+            
+            if (m_usb_is_connected)
+            {
                 m_writer->open();
             }
         }
     }
     else
     {
-        if (m_cable_is_connected){
+        if (m_cable_is_connected)
+        {
             m_cable_is_connected = false;
-            if( !m_quit->load() ) {
+            
+            if( !m_quit->load() ) 
+            {
                 m_logger->log("Signal cable disconnected");
             }
+
             m_writer->flush();
         }
     }

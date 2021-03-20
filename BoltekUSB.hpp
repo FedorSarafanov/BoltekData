@@ -37,9 +37,7 @@ class BoltekUSB : public BoltekDevice
 
 		uint8_t receive_buf[BUFFER_SIZE];
 		uint8_t transfer_buf[BUFFER_SIZE];
-		char buf[BUFFER_SIZE];
-
-		bool m_boltek_usb_connected = true;
+		char m_buf[BUFFER_SIZE];
 
 		int usb_write(void);
 		void usb_control_out(uint8_t bRequest, uint16_t wValue, uint16_t wIndex);

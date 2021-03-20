@@ -1,4 +1,9 @@
 #pragma once
+#include <atomic>
+#include <termios.h>
+#include <fcntl.h> 
+#include <unistd.h>
+#include <cstring>
 #include "BoltekDevice.hpp"
 #include "Logger.hpp"
 #include "Writer.hpp"
@@ -17,8 +22,6 @@ class BoltekTTY : public BoltekDevice
 
 		char m_buf[BUFFER_SIZE];
 		int  m_tty_fd = 0;
-		bool m_usb_is_connected = true;
-		bool m_cable_is_connected = true;
 
 
 		InitialisationStatus m_init_status = DEFAULT;
