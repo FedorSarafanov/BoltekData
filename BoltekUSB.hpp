@@ -8,9 +8,10 @@
 #include <atomic>
 
 #include <libusb-1.0/libusb.h> 
-#include "logger.h"
-#include "writer.h"
+#include "Logger.hpp"
+#include "Writer.hpp"
 
+#include "BoltekDevice.hpp"
 
 #define USB_VENDOR_ID       0x0403      /* USB vendor ID used by the device
                                          * 0x0483 is STMs ID
@@ -21,7 +22,8 @@
 #define USB_TIMEOUT         3000        /* Connection timeout (in ms) */
 #define BUFFER_SIZE 1024
 
-class Boltek
+
+class BoltekUSB : public BoltekDevice
 {
 	private:
 		std::string SID;
@@ -39,24 +41,14 @@ class Boltek
 
 		bool m_boltek_usb_connected = true;
 
-
 		int usb_write(void);
 		void usb_control_out(uint8_t bRequest, uint16_t wValue, uint16_t wIndex);
 		void usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength);
 		int usb_read(void);
-		enum Init_res
-		{
-			DEFAULT = -2,
-		    ERR_GET_DEV_LIST = -1,
-		    INIT_SUCCESS = 0,
-		    ERR_OPEN_BOLTEK = 1,
-		    ERR_CLAIM_BOLTEK = 2,
-		    ERR_NOTFOUND_BOLTEK = 3,
-		};
-		Init_res m_init_flag = DEFAULT;
-		Init_res init(const unsigned PID);
+		InitialisationStatus m_init_flag = DEFAULT;
+		InitialisationStatus init(const unsigned PID);		
 	public:
-		Boltek(std::string SID, Logger *logger, Writer *writer, std::atomic<bool> *quit);
-		~Boltek();
-		std::string read_data(void);
+		BoltekUSB(std::string SID, Logger *logger, Writer *writer, std::atomic<bool> *quit);
+		~BoltekUSB() override;
+		virtual std::string read_data() override;
 };

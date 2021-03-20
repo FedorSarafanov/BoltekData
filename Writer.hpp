@@ -4,7 +4,7 @@
 #include <ctime>
 #include <unistd.h>
 #include <sys/time.h>
-#include "logger.h"
+#include "Logger.hpp"
 
 class Writer
 {

@@ -1,18 +1,23 @@
-#include "boltek_tty.h"
+#include <atomic>
 #include <termios.h>
-#include <fcntl.h>    /* For O_RDWR */
-#include <unistd.h>   /* For open(), create() */
+#include <fcntl.h> 
+#include <unistd.h>
+#include <cstring>
+
+#include "BoltekTTY.hpp"
 
 
-Boltek_tty::Init_res Boltek_tty::init(std::string tty_address)
+
+
+BoltekTTY::InitialisationStatus BoltekTTY::init(std::string tty_address)
 {
-    tty_fd = open(tty_address.c_str(), O_RDWR);
+    m_tty_fd = open(tty_address.c_str(), O_RDWR);
 
     struct termios tty;
 
-    if(tcgetattr(tty_fd, &tty) != 0) {
+    if(tcgetattr(m_tty_fd, &tty) != 0) {
         // printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
-        close(tty_fd);
+        close(m_tty_fd);
         return ERR_NOTFOUND_BOLTEK;
     }
 
@@ -45,81 +50,80 @@ Boltek_tty::Init_res Boltek_tty::init(std::string tty_address)
     cfsetospeed(&tty, B9600);
 
     // Save tty settings, also checking for error
-    if (tcsetattr(tty_fd, TCSANOW, &tty) != 0) {
+    if (tcsetattr(m_tty_fd, TCSANOW, &tty) != 0) {
         // printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
-        close(tty_fd);
+        close(m_tty_fd);
         return ERR_OPEN_BOLTEK;
     }
 
     return INIT_SUCCESS;
 }
 
-Boltek_tty::Boltek_tty(std::string tty_address, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
+BoltekTTY::BoltekTTY(std::string tty_address, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
 {
     m_logger = logger;
     m_writer = writer;
     m_quit = mquit;
     m_tty_address = tty_address;
-    // m_logger->log("%s",tty_address.c_str());
-    m_init_flag = Boltek_tty::init(tty_address);
+    m_init_status = BoltekTTY::init(tty_address);
 }
 
-Boltek_tty::~Boltek_tty()
+BoltekTTY::~BoltekTTY()
 {
-	if (m_init_flag == INIT_SUCCESS) { 
-        close(tty_fd);    
+	if (m_init_status == INIT_SUCCESS) { 
+        close(m_tty_fd);    
     }
 }
 
-std::string Boltek_tty::read_data()
+std::string BoltekTTY::read_data()
 {
-    m_boltek_usb_connected = true;
-    while (m_init_flag != INIT_SUCCESS)
+    m_usb_is_connected = true;
+    while (m_init_status != INIT_SUCCESS)
     {
         if( m_quit->load() ) {
             return std::string("");
         }
-        if (m_boltek_usb_connected)
+        if (m_usb_is_connected)
         {
             m_logger->log("Usb disconnected");
             m_writer->flush();
-            m_boltek_usb_connected = false;
+            m_usb_is_connected = false;
         }
         usleep(500000);
-        m_init_flag = Boltek_tty::init(m_tty_address);
+        m_init_status = BoltekTTY::init(m_tty_address);
     }
-    if (!m_boltek_usb_connected){
-        m_boltek_usb_connected = true;
+    if (!m_usb_is_connected){
+        m_usb_is_connected = true;
         m_logger->log("Usb connected");
-        if (m_boltek_cable_connected){
+        if (m_cable_is_connected){
             m_writer->open();
         }
     }
 
-    memset(&buf[0], 0, sizeof(buf));
-    int rdlen = read(tty_fd, buf, sizeof(buf)-1);
+    memset(&m_buf[0], 0, sizeof(m_buf));
+    int rdlen = read(m_tty_fd, m_buf, sizeof(m_buf)-1);
 
     std::string result("");
-    if (isatty(tty_fd) == 0)
+    if (isatty(m_tty_fd) == 0)
     {
-        m_init_flag = DEFAULT;
+        m_init_status = DEFAULT;
         return result;
     }
     if (rdlen > 0)
     {
-        result = std::string(buf);
-        if (!m_boltek_cable_connected){
-            m_boltek_cable_connected = true;
+        result = std::string(m_buf);
+        if (!m_cable_is_connected){
+            m_cable_is_connected = true;
             m_logger->log("Signal cable connected");
-            if (m_boltek_usb_connected){
+            if (m_usb_is_connected){
                 m_writer->open();
             }
         }
     }
     else
     {
-        if (m_boltek_cable_connected){
-            m_boltek_cable_connected = false;
+        if (m_cable_is_connected){
+            m_cable_is_connected = false;
             if( !m_quit->load() ) {
                 m_logger->log("Signal cable disconnected");
             }

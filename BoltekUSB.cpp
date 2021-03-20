@@ -1,10 +1,9 @@
-#include "boltek.h"
-
+#include "BoltekUSB.hpp"
 
 /**
  * Read a packet to `string` variable
  */
-int Boltek::usb_read(void)
+int BoltekUSB::usb_read(void)
 {
     int nread, ret;
     ret = libusb_bulk_transfer(handle, USB_ENDPOINT_IN, receive_buf, sizeof(receive_buf),
@@ -23,7 +22,7 @@ int Boltek::usb_read(void)
 /**
  * write a few bytes to the device
  */
-int Boltek::usb_write(void)
+int BoltekUSB::usb_write(void)
 {
     int n;
     int ret = libusb_bulk_transfer(handle, USB_ENDPOINT_OUT, transfer_buf, sizeof(transfer_buf), &n, USB_TIMEOUT);
@@ -48,7 +47,7 @@ int Boltek::usb_write(void)
 
 }
 
-void Boltek::usb_control_out(uint8_t bRequest, uint16_t wValue, uint16_t wIndex) {
+void BoltekUSB::usb_control_out(uint8_t bRequest, uint16_t wValue, uint16_t wIndex) {
     int rc = libusb_control_transfer(   
                                     handle,
                                     0x40, //uint8_t     bmRequestType,
@@ -61,7 +60,7 @@ void Boltek::usb_control_out(uint8_t bRequest, uint16_t wValue, uint16_t wIndex)
                                     );
 }
 
-void Boltek::usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength) {
+void BoltekUSB::usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength) {
     uint8_t cr2[2];
     int rc2 = libusb_control_transfer(  
                                      handle,
@@ -77,7 +76,7 @@ void Boltek::usb_control_in(uint8_t bRequest, uint16_t wValue, uint16_t wIndex, 
 
 
 
-Boltek::Init_res Boltek::init(const unsigned PID)
+BoltekUSB::InitialisationStatus BoltekUSB::init(const unsigned PID)
 {
     // signal(SIGINT, sighandler);
     libusb_init(&ctx);
@@ -178,16 +177,16 @@ Boltek::Init_res Boltek::init(const unsigned PID)
     return INIT_SUCCESS;
 }
 
-Boltek::Boltek(std::string SD, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
+BoltekUSB::BoltekUSB(std::string SD, Logger *logger, Writer *writer, std::atomic<bool> *mquit)
 {
     m_logger = logger;
     m_writer = writer;
     m_quit = mquit;
     SID = SD;
-    m_init_flag = Boltek::init(USB_PRODUCT_ID);
+    m_init_flag = BoltekUSB::init(USB_PRODUCT_ID);
 }
 
-Boltek::~Boltek()
+BoltekUSB::~BoltekUSB()
 {
 	if (m_init_flag == INIT_SUCCESS) { 
         libusb_release_interface (handle, 0);
@@ -199,7 +198,7 @@ Boltek::~Boltek()
     }
 }
 
-std::string Boltek::read_data()
+std::string BoltekUSB::read_data()
 {
     m_boltek_usb_connected = true;
     while (m_init_flag != INIT_SUCCESS)
@@ -215,7 +214,7 @@ std::string Boltek::read_data()
         }
         libusb_exit(NULL);
         usleep(500000);        
-        m_init_flag = Boltek::init(USB_PRODUCT_ID);
+        m_init_flag = BoltekUSB::init(USB_PRODUCT_ID);
     }
     if (!m_boltek_usb_connected){
         m_boltek_usb_connected = true;

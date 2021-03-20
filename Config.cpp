@@ -1,4 +1,4 @@
-#include "config.h"
+#include "Config.hpp"
 
 void Config::parse_cargs(int argc, char **argv)
 {
