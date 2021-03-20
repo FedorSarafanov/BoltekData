@@ -98,7 +98,7 @@ std::string BoltekTTY::read_data()
         }
     }
 
-    memset(&m_buf[0], 0, sizeof(m_buf));
+    memset(m_buf, 0, sizeof(m_buf));
     int rdlen = read(m_tty_fd, m_buf, sizeof(m_buf)-1);
 
     std::string result("");
