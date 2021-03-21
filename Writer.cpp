@@ -14,8 +14,8 @@ Writer::Writer(const std::string &prefix, Logger *logger, std::string folder)
 
 Writer::~Writer()
 {
-	fflush(m_file_ptr);
 	if (m_file_ptr){
+		fflush(m_file_ptr);
 		fclose(m_file_ptr);
 	}
 }
@@ -33,7 +33,7 @@ void Writer::open(struct tm *gtm)
 		if (m_file_ptr){
 			fclose(m_file_ptr);
 		}    	
-	    m_fn = filename;
+	    m_fn = filename; // CHECK THIS. SFG 21.03.21
 		m_file_ptr = fopen(m_fn.c_str(),"a+");
 	    if (m_file_ptr)
 	    {

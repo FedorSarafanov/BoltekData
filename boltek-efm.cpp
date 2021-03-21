@@ -14,13 +14,21 @@
 #include "BoltekTTY.hpp"
 #include "BoltekUSB.hpp"
 
-#define READ_DATA_DELAY_US 1000
-#define HELP_TEXT  "Boltek fluxmeter client v1.1\n"\
-                  "F. Kuterin, F. Sarafanov (c) IAPRAS 2020-2021\n\n"\
-                  "Use \t./boltek-efm --sid=[SID] --prefix=[PREFIX] --pid=[PID],\n where [PID] can be obtained using \n"\
-                  "command `lsusb  -d 0x0403: -v | grep idProduct`,\n [PREFIX] -- location string (without whitespaces or dash)\n"\
-                  "[SID] can be obtained using command `lsusb  -d 0x0403: -v | grep Serial`.\n"
 
+constexpr int READ_DATA_DELAY_US(1000);
+constexpr const char* HELP_TEXT(\
+    "Boltek EFM-100 fluxmeter client v1.1\n"\
+    "F. Kuterin, F. Sarafanov (c) IAPRAS Jun 16 2020 - " __DATE__ "\n\n"\
+    "Use: boltek-efm [arguments]\n\n"\
+    "Arguments:\n"\
+    "  -config, --config   Configuration file\n"\
+    "  -folder, --folder   Folder for save data files\n"\
+    "  -log, --log         Log file. Pass \"none\" for redirect to stdout\n"\
+    "  -prefix, --prefix   Data files prefix\n"\
+    "  -pid, --pid         Boltek (USB) product id. For example, 0xf245\n"\
+    "  -sid, --sid         Boltek (USB) serial id. For example, E2150533\n"\
+    "  -tty, --tty         Boltek (TTY) address, for example /dev/ttyUSB0\n"\
+    "  -h,   --help        Show this help and exit\n");
 
 
 std::atomic<bool> quit(false);
@@ -30,7 +38,7 @@ void got_signal(int)
     quit.store(true);
 }
 
- 
+
 int main(int argc, char *argv[])
 {
 

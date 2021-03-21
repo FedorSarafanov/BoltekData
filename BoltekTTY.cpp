@@ -20,8 +20,7 @@ BoltekTTY::InitialisationStatus BoltekTTY::init(const std::string &tty_address)
     tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
     tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
 
-    // tty.c_lflag &= ~ICANON;
-    tty.c_lflag &= ~ICANON; //NB!!!
+    tty.c_lflag &= ~ICANON; // Non-canon mode (not line by line)
     tty.c_lflag &= ~ECHO; // Disable echo
     tty.c_lflag &= ~ECHOE; // Disable erasure
     tty.c_lflag &= ~ECHONL; // Disable new-line echo
@@ -31,8 +30,6 @@ BoltekTTY::InitialisationStatus BoltekTTY::init(const std::string &tty_address)
 
     tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
     tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-    // tty.c_oflag &= ~OXTABS; // Prevent conversion of tabs to spaces (NOT PRESENT ON LINUX)
-    // tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars (0x004) in output (NOT PRESENT ON LINUX)
 
     tty.c_cc[VMIN] = 0;
     tty.c_cc[VTIME] = 5;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
@@ -69,12 +66,14 @@ BoltekTTY::~BoltekTTY()
 
 std::string BoltekTTY::read_data()
 {
+    std::string result("");
     m_usb_is_connected = true;
+
     while (m_init_status != INIT_SUCCESS)
     {
         if( m_quit->load() )
         {
-            return std::string("");
+            return result;
         }
 
         if (m_usb_is_connected)
@@ -100,9 +99,7 @@ std::string BoltekTTY::read_data()
 
     memset(m_buf, 0, sizeof(m_buf));
     int rdlen = read(m_tty_fd, m_buf, sizeof(m_buf)-1);
-
-    std::string result("");
-    
+   
     if (isatty(m_tty_fd) == 0)
     {
         m_init_status = DEFAULT;
