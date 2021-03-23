@@ -197,7 +197,7 @@
 13529 [bash] <defunct>
 13598 /usr/lib/libreoffice/program/oosplash --writer file:///home/osabio/Vostok_data_processing.docx
 13616 /usr/lib/libreoffice/program/soffice.bin --writer file:///home/osabio/Vostok_data_processing.docx --splash-pipe=5
-13670 [kworker/u16:1-flush-8:0]
+13670 [kworker/u16:1-events_unbound]
 13771 /usr/lib/firefox-esr/firefox-esr -contentproc -parentBuildID 20210119174753 -prefsLen 7360 -prefMapSize 224416 -appdir /usr/lib/firefox-esr/browser 12711 true rdd
 13790 lightdm --session-child 16 21
 14140 [kworker/1:2-mm_percpu_wq]
@@ -216,8 +216,8 @@
 17865 [bash] <defunct>
 17947 [bash] <defunct>
 18103 [bash] <defunct>
-18197 [kworker/3:1-events_power_efficient]
-18203 [kworker/1:1]
+18197 [kworker/3:1-mm_percpu_wq]
+18203 [kworker/1:1-cgroup_destroy]
 18292 bash
 18489 [bash] <defunct>
 18510 /usr/sbin/CRON -f
@@ -232,27 +232,18 @@
 18679 bash
 18683 mc
 18685 bash -rcfile .bashrc
-18712 /usr/lib/xorg/Xorg :1 -seat seat0 -auth /var/run/lightdm/root/:1 -nolisten tcp vt8 -novtswitch
-18721 lightdm --session-child 23 26
-18725 /lib/systemd/systemd --user
-18726 (sd-pam)
-18808 /usr/sbin/lightdm-gtk-greeter
-18812 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
-18813 /usr/lib/at-spi2-core/at-spi-bus-launcher
-18818 /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 3
-18820 /usr/lib/at-spi2-core/at-spi2-registryd --use-gnome-session
-18822 /usr/lib/gvfs/gvfsd
-18829 /usr/lib/gvfs/gvfsd-fuse /run/user/115/gvfs -f -o big_writes
-18849 lightdm --session-child 15 28
 18905 [kworker/0:1-cgroup_destroy]
 18906 [kworker/2:2]
 19225 [kworker/3:2-mm_percpu_wq]
-19250 [kworker/u16:2]
-19288 [kworker/3:0-mm_percpu_wq]
-19301 /usr/sbin/CRON -f
-19302 /bin/sh -c (/home/osabio/projects/boltek_measure/BoltekData/data2/run.sh)
-19303 /bin/sh /home/osabio/projects/boltek_measure/BoltekData/data2/run.sh
-19304 ps ax -o pid,cmd
+19250 [kworker/u16:2-events_unbound]
+19288 [kworker/3:0-cgroup_destroy]
+19315 [kworker/u16:0-events_unbound]
+19317 [kworker/u16:3]
+19320 [kworker/1:0]
+19326 /usr/sbin/CRON -f
+19327 /bin/sh -c (/home/osabio/projects/boltek_measure/BoltekData/data2/run.sh)
+19328 /bin/sh /home/osabio/projects/boltek_measure/BoltekData/data2/run.sh
+19329 ps ax -o pid,cmd
 20393 dbus-launch --autolaunch=d586f3e8b669424093d34bf55e55b3a3 --binary-syntax --close-stderr
 20394 /usr/bin/dbus-daemon --syslog-only --fork --print-pid 5 --print-address 7 --session
 20397 /usr/lib/dconf/dconf-service
