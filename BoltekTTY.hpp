@@ -7,7 +7,8 @@
 #include "BoltekDevice.hpp"
 #include "Logger.hpp"
 #include "Writer.hpp"
-#define BUFFER_SIZE 1024
+
+constexpr size_t BUFFER_SIZE(1024);
 
 class BoltekTTY : public BoltekDevice
 {

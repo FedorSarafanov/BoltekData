@@ -110,11 +110,11 @@ int main(int argc, char *argv[])
 
         if ( quit.load() ) 
         {
-            delete boltek_device;
             logger.log("Received SIGINT");
             break;
         }
     }
     
+    delete boltek_device;
     return EXIT_SUCCESS;
 }
