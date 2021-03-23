@@ -76,15 +76,18 @@ log=$(whiptail --title  "Install boltek-efm measure tool" --inputbox  "Input log
 echo "log = $folder/$log" >> $currdir/boltek-efm-temp.ini;
 
 
+syncdir=$(whiptail --title  "Install boltek-efm measure tool" --inputbox  "Input diogen path for rsync" 20 76 "/mnt/a/observations/fluxmeters/" 3>&1 1>&2 2>&3)
+
+
 mv $currdir/boltek-efm-temp.ini  $currdir/$folder/boltek-efm.ini;
 echo "cd $currdir; ps ax -o pid,cmd > temp; cat temp | grep boltek-efm | grep $folder > /dev/null && echo "" || exec $currdir/boltek-efm --ini=$folder/boltek-efm.ini" > \
     $currdir/$folder/run.sh;
 chmod +x $currdir/$folder/run.sh;
 
-# 4,24,44 * * * * (rsync -zavP $HOME/BoltekData/ boltek@diogen.iapras.ru:/mnt/a/observations/fluxmeters/iapras/boltek_531_534 >/dev/null 2>/dev/null)
 
 crontab -l > mycron;
 echo "*/1 * * * * ($currdir/$folder/run.sh)" >> mycron;
+echo "*/15 * * * * (rsync -zavP $currdir$/$folder boltek@diogen.iapras.ru:$syncdir >/dev/null 2>/dev/null)" >> mycron;
 crontab mycron;
 rm mycron;
 

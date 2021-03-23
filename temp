@@ -234,16 +234,18 @@
 18685 bash -rcfile .bashrc
 18905 [kworker/0:1-cgroup_destroy]
 18906 [kworker/2:2]
-19225 [kworker/3:2-mm_percpu_wq]
 19250 [kworker/u16:2-events_unbound]
-19288 [kworker/3:0-cgroup_destroy]
+19288 [kworker/3:0-mm_percpu_wq]
 19315 [kworker/u16:0-events_unbound]
-19317 [kworker/u16:3]
+19317 [kworker/u16:3-events_unbound]
 19320 [kworker/1:0]
-19326 /usr/sbin/CRON -f
-19327 /bin/sh -c (/home/osabio/projects/boltek_measure/BoltekData/data2/run.sh)
-19328 /bin/sh /home/osabio/projects/boltek_measure/BoltekData/data2/run.sh
-19329 ps ax -o pid,cmd
+19470 [kworker/3:2]
+19494 bash
+19498 ssh boltek@diogen
+19501 /usr/sbin/CRON -f
+19502 /bin/sh -c (/home/osabio/projects/boltek_measure/BoltekData/data2/run.sh)
+19503 /bin/sh /home/osabio/projects/boltek_measure/BoltekData/data2/run.sh
+19504 ps ax -o pid,cmd
 20393 dbus-launch --autolaunch=d586f3e8b669424093d34bf55e55b3a3 --binary-syntax --close-stderr
 20394 /usr/bin/dbus-daemon --syslog-only --fork --print-pid 5 --print-address 7 --session
 20397 /usr/lib/dconf/dconf-service
