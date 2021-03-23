@@ -1,0 +1,1 @@
+cd /home/osabio/projects/boltek_measure/BoltekData; ps ax -o pid,cmd > temp; cat temp | grep boltek-efm | grep data2 > /dev/null && echo  || exec /home/osabio/projects/boltek_measure/BoltekData/boltek-efm --ini=data2/boltek-efm.ini

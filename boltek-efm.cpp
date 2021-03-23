@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <unistd.h>
 #include <signal.h>
 #include <atomic>
@@ -82,6 +82,8 @@ int main(int argc, char *argv[])
     }
 
     std::string line("");
+    std::string full_line("");
+    int bad_lines_count = 0;
     while(true){
         for (auto symbol : boltek_device->read_data())
         {
@@ -90,20 +92,41 @@ int main(int argc, char *argv[])
                 case '$':
                     if (line.length() == 5 && !isdigit(line[0]))
                     {
+                        if (bad_lines_count > 0){
+                        	bad_lines_count = 0;
+                        	logger.log("Note: end of bad lines sequence");
+                        }
                         writer.write(line);
                     }
+                    else
+                    {
+                		if (!(full_line == "")) {
+	                    	full_line = full_line.substr(0,full_line.size()-1); 
+	                    	if (bad_lines_count < 10){
+		                    	bad_lines_count++;
+	                    	}
+	                    	if (bad_lines_count < 6){
+		                        logger.log("Error: get bad line %s", full_line.c_str());
+	                    	}
+							if (bad_lines_count == 6){
+		                        logger.log("Error: get bad lines more than 5.");
+	                    	}
+                		}
+                    }
                     line = "";
+                    full_line = "";
                     break;
                 case '+':
                 case '-':
                     line += symbol;
                     break;
-                default:
+                default: 
                     if (isdigit(symbol) && line.length() < 5)
                     {
                         line += symbol;
                     }
             }
+            full_line += symbol;
         }
 
         usleep(READ_DATA_DELAY_US);

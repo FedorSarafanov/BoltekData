@@ -19,4 +19,5 @@ class BoltekDevice
 		};
 		bool m_usb_is_connected = true;
 		bool m_cable_is_connected = true;
+		int m_bad_lines_count = 0;
 };

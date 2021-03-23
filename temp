@@ -1,0 +1,266 @@
+  PID CMD
+    1 /sbin/init
+    2 [kthreadd]
+    3 [rcu_gp]
+    4 [rcu_par_gp]
+    6 [kworker/0:0H-kblockd]
+    8 [mm_percpu_wq]
+    9 [ksoftirqd/0]
+   10 [rcu_sched]
+   11 [rcu_bh]
+   12 [migration/0]
+   14 [cpuhp/0]
+   15 [cpuhp/1]
+   16 [migration/1]
+   17 [ksoftirqd/1]
+   19 [kworker/1:0H-kblockd]
+   20 [cpuhp/2]
+   21 [migration/2]
+   22 [ksoftirqd/2]
+   24 [kworker/2:0H-kblockd]
+   25 [cpuhp/3]
+   26 [migration/3]
+   27 [ksoftirqd/3]
+   29 [kworker/3:0H-kblockd]
+   30 [kdevtmpfs]
+   31 [netns]
+   32 [kauditd]
+   33 [khungtaskd]
+   34 [oom_reaper]
+   35 [writeback]
+   36 [kcompactd0]
+   37 [ksmd]
+   38 [khugepaged]
+   39 [crypto]
+   40 [kintegrityd]
+   41 [kblockd]
+   42 [edac-poller]
+   43 [devfreq_wq]
+   44 [watchdogd]
+   46 [kswapd0]
+   64 [kthrotld]
+   67 [ipv6_addrconf]
+   78 [kstrp]
+  130 [ata_sff]
+  132 [scsi_eh_0]
+  147 [scsi_tmf_0]
+  148 [scsi_eh_1]
+  149 [scsi_tmf_1]
+  152 [scsi_eh_2]
+  153 [scsi_tmf_2]
+  154 [scsi_eh_3]
+  155 [scsi_tmf_3]
+  189 [ttm_swap]
+  192 [kworker/2:1H-kblockd]
+  193 [kworker/0:1H-kblockd]
+  194 [kworker/1:1H-kblockd]
+  195 [kworker/3:1H-kblockd]
+  198 [scsi_eh_4]
+  199 [scsi_tmf_4]
+  200 [usb-storage]
+  201 [uas]
+  225 [kworker/u17:0]
+  227 [jbd2/sda1-8]
+  228 [ext4-rsv-conver]
+  265 /lib/systemd/systemd-journald
+  311 [loop0]
+  347 [irq/27-mei_me]
+  469 [jbd2/sdb1-8]
+  470 [ext4-rsv-conver]
+  507 /lib/systemd/systemd-timesyncd
+  542 /usr/lib/accountsservice/accounts-daemon
+  544 /usr/sbin/alsactl -E HOME=/run/alsa -s -n 19 -c rdaemon
+  548 /usr/lib/udisks2/udisksd
+  549 /lib/systemd/systemd-logind
+  551 /usr/sbin/ModemManager --filter-policy=strict
+  552 /usr/sbin/cron -f
+  553 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+  554 /usr/sbin/NetworkManager --no-daemon
+  555 /sbin/wpa_supplicant -u -s -O /run/wpa_supplicant
+  558 avahi-daemon: running [platon.local]
+  559 /usr/sbin/rsyslogd -n -iNONE
+  578 avahi-daemon: chroot helper
+  580 /usr/lib/policykit-1/polkitd --no-debug
+  594 /usr/sbin/lightdm
+  606 /usr/lib/colord/colord
+  612 /sbin/agetty -o -p -- \u --noclear tty1 linux
+  613 /usr/lib/xorg/Xorg :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch
+  688 /usr/sbin/sshd -D
+  827 /sbin/dhclient -d -q -sf /usr/lib/NetworkManager/nm-dhcp-helper -pf /run/dhclient-enp4s0.pid -lf /var/lib/NetworkManager/dhclient-13d2c91a-992b-4675-8a02-adff419f030b-enp4s0.lease -cf /var/lib/NetworkManager/dhclient-enp4s0.conf enp4s0
+  889 lightdm --session-child 12 21
+  894 /lib/systemd/systemd --user
+  895 (sd-pam)
+  982 /bin/sh /etc/xdg/xfce4/xinitrc -- /etc/X11/xinit/xserverrc
+  990 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+ 1082 /usr/bin/ssh-agent /usr/bin/im-launch x-session-manager
+ 1161 xfce4-session
+ 1162 /usr/lib/at-spi2-core/at-spi-bus-launcher
+ 1167 /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 3
+ 1170 /usr/lib/at-spi2-core/at-spi2-registryd --use-gnome-session
+ 1175 /usr/lib/x86_64-linux-gnu/xfce4/xfconf/xfconfd
+ 1179 /usr/bin/gpg-agent --supervised
+ 1181 xfwm4 --display :0.0 --sm-client-id 2a19b8e56-6aa2-469b-a081-2ae076fa7fe6
+ 1189 /usr/lib/gvfs/gvfsd
+ 1194 /usr/lib/gvfs/gvfsd-fuse /run/user/1000/gvfs -f -o big_writes
+ 1209 xfce4-panel --display :0.0 --sm-client-id 29bea2e06-ed18-4e0a-9e06-da9453739355
+ 1217 xfsettingsd --display :0.0 --sm-client-id 2c8094a01-c156-4686-bb60-69f36053e8e9
+ 1233 /usr/lib/upower/upowerd
+ 1236 xfdesktop --display :0.0 --sm-client-id 2011f1b8c-d520-43db-93cf-2a6f4c1bbb40
+ 1240 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libwhiskermenu.so 7 16777241 whiskermenu Меню Whisker Показывает меню для простого доступа к установленным приложениям
+ 1244 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libxkb.so 8 16777242 xkb Раскладки клавиатуры Настройка и переключение клавиатурных раскладок
+ 1249 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libpulseaudio-plugin.so 9 16777243 pulseaudio Модуль PulseAudio Управление громкостью звука системы PulseAudio
+ 1251 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-1.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libsystray.so 6 16777244 systray Системный лоток Область для отображения значков уведомлений
+ 1255 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libwhiskermenu.so 11 16777248 whiskermenu Меню Whisker Показывает меню для простого доступа к установленным приложениям
+ 1258 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libdatetime.so 12 16777249 datetime Дата и время Отображает дату и время на панели, содержит простой календарь
+ 1289 xfce4-power-manager --restart --sm-client-id 214c5d683-8487-437e-9403-ad2a2d1b3e60
+ 1307 /usr/lib/gvfs/gvfs-udisks2-volume-monitor
+ 1310 /usr/bin/pulseaudio --daemonize=no
+ 1311 /usr/lib/x86_64-linux-gnu/xfce4/notifyd/xfce4-notifyd
+ 1315 /usr/lib/gvfs/gvfs-afc-volume-monitor
+ 1316 /usr/lib/rtkit/rtkit-daemon
+ 1324 /usr/lib/gvfs/gvfs-gphoto2-volume-monitor
+ 1334 /usr/lib/gvfs/gvfs-mtp-volume-monitor
+ 1338 /usr/lib/gvfs/gvfs-goa-volume-monitor
+ 1351 /usr/lib/gvfs/gvfsd-trash --spawner :1.12 /org/gtk/gvfs/exec_spaw/0
+ 1357 /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+ 1362 nm-applet
+ 1363 /usr/bin/python3 /usr/share/system-config-printer/applet.py
+ 1364 light-locker
+ 1379 /usr/lib/dconf/dconf-service
+ 1427 /usr/lib/gvfs/gvfsd-metadata
+ 2559 ssh -x -a -oClearAllForwardings=yes -2 diogen -s sftp
+ 2560 sshfs diogen://mnt/a/observations/fluxmeters/ ./fluxmeters
+ 2567 thunar /home/osabio/bo2
+ 3893 [loop1]
+ 3960 /usr/lib/snapd/snapd
+ 4035 /usr/lib/gvfs/gvfsd-network --spawner :1.12 /org/gtk/gvfs/exec_spaw/1
+ 4054 /usr/lib/gvfs/gvfsd-dnssd --spawner :1.12 /org/gtk/gvfs/exec_spaw/3
+ 4215 /usr/bin/kactivitymanagerd start-daemon
+ 4227 /usr/bin/kglobalaccel5
+ 6026 xfce4-appfinder
+ 7187 [bash] <defunct>
+ 8213 /usr/bin/Xtigervnc :2 -desktop platon.iapras.ru:2 (osabio) -auth /home/osabio/.Xauthority -geometry 1900x1200 -depth 24 -rfbwait 30000 -rfbauth /home/osabio/.vnc/passwd -rfbport 5902 -pn -SecurityTypes VncAuth,TLSVnc
+ 8225 /bin/sh /etc/xdg/xfce4/xinitrc -- /etc/X11/xinit/xserverrc
+ 8251 xfce4-session
+ 8276 /usr/bin/dbus-launch --sh-syntax --exit-with-session xfce4-session
+ 8277 /usr/bin/dbus-daemon --syslog --fork --print-pid 5 --print-address 7 --session
+ 8287 /usr/lib/x86_64-linux-gnu/xfce4/xfconf/xfconfd
+ 8293 /usr/bin/ssh-agent -s
+ 8301 xfwm4
+ 8308 xfce4-panel
+ 8312 xfdesktop
+ 8313 xfsettingsd
+ 8325 /usr/lib/gvfs/gvfsd
+ 8326 /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+ 8331 nm-applet
+ 8343 /usr/bin/python3 /usr/share/system-config-printer/applet.py
+ 8378 /usr/lib/dconf/dconf-service
+ 8398 /usr/lib/at-spi2-core/at-spi-bus-launcher
+ 8407 /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 3
+ 8420 /usr/lib/at-spi2-core/at-spi2-registryd --use-gnome-session
+ 8425 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libwhiskermenu.so 7 10485785 whiskermenu Меню Whisker Показывает меню для простого доступа к установленным приложениям
+ 8428 /usr/lib/gvfs/gvfs-udisks2-volume-monitor
+ 8430 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libxkb.so 8 10485786 xkb Раскладки клавиатуры Настройка и переключение клавиатурных раскладок
+ 8431 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libpulseaudio-plugin.so 9 10485787 pulseaudio Модуль PulseAudio Управление громкостью звука системы PulseAudio
+ 8433 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-1.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libsystray.so 6 10485788 systray Системный лоток Область для отображения значков уведомлений
+ 8442 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libwhiskermenu.so 11 10485792 whiskermenu Меню Whisker Показывает меню для простого доступа к установленным приложениям
+ 8443 /usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/libdatetime.so 12 10485793 datetime Дата и время Отображает дату и время на панели, содержит простой календарь
+ 8478 /usr/lib/x86_64-linux-gnu/xfce4/notifyd/xfce4-notifyd
+ 8480 /usr/lib/gvfs/gvfs-afc-volume-monitor
+ 8496 /usr/lib/gvfs/gvfs-gphoto2-volume-monitor
+ 8508 /usr/lib/gvfs/gvfs-mtp-volume-monitor
+ 8524 /usr/lib/gvfs/gvfs-goa-volume-monitor
+ 8537 /usr/lib/gvfs/gvfsd-trash --spawner :1.8 /org/gtk/gvfs/exec_spaw/0
+ 8592 /usr/lib/gvfs/gvfsd-metadata
+ 8602 /usr/lib/gvfs/gvfsd-network --spawner :1.8 /org/gtk/gvfs/exec_spaw/1
+ 8614 /usr/lib/gvfs/gvfsd-dnssd --spawner :1.8 /org/gtk/gvfs/exec_spaw/3
+10871 /lib/systemd/systemd-udevd
+11060 [bash] <defunct>
+11073 [bash] <defunct>
+11220 /usr/lib/gvfs/gvfsd-sftp --spawner :1.12 /org/gtk/gvfs/exec_spaw/4
+11228 /usr/bin/ssh -oForwardX11 no -oForwardAgent no -oPermitLocalCommand no -oClearAllForwardings yes -oProtocol 2 -oNoHostAuthenticationForLocalhost yes -s diogen sftp
+11230 /usr/bin/ssh -oForwardX11 no -oForwardAgent no -oPermitLocalCommand no -oClearAllForwardings yes -oProtocol 2 -oNoHostAuthenticationForLocalhost yes -s diogen sftp
+11570 /usr/bin/kactivitymanagerd start-daemon
+11581 /usr/bin/kglobalaccel5
+11660 [bash] <defunct>
+11671 /usr/bin/gnome-keyring-daemon --start --foreground --components=secrets
+11889 /usr/bin/gvim /tmp/mozilla_osabio0/anonymous.c
+12265 bash
+12644 [kworker/2:0-mm_percpu_wq]
+12659 /opt/sublime_text/sublime_text /home/osabio/projects/boltek_measure/BoltekData/boltek-efm.cpp
+12670 /opt/sublime_text/plugin_host 12659 --auto-shell-env
+12711 /usr/lib/firefox-esr/firefox-esr
+12761 /usr/lib/firefox-esr/firefox-esr -contentproc -childID 1 -isForBrowser -prefsLen 1 -prefMapSize 224416 -parentBuildID 20210119174753 -appdir /usr/lib/firefox-esr/browser 12711 true tab
+12810 /usr/lib/firefox-esr/firefox-esr -contentproc -childID 2 -isForBrowser -prefsLen 6380 -prefMapSize 224416 -parentBuildID 20210119174753 -appdir /usr/lib/firefox-esr/browser 12711 true tab
+13337 /usr/lib/firefox-esr/firefox-esr -contentproc -childID 6 -isForBrowser -prefsLen 7311 -prefMapSize 224416 -parentBuildID 20210119174753 -appdir /usr/lib/firefox-esr/browser 12711 true tab
+13382 /usr/lib/firefox-esr/firefox-esr -contentproc -childID 7 -isForBrowser -prefsLen 7311 -prefMapSize 224416 -parentBuildID 20210119174753 -appdir /usr/lib/firefox-esr/browser 12711 true tab
+13529 [bash] <defunct>
+13598 /usr/lib/libreoffice/program/oosplash --writer file:///home/osabio/Vostok_data_processing.docx
+13616 /usr/lib/libreoffice/program/soffice.bin --writer file:///home/osabio/Vostok_data_processing.docx --splash-pipe=5
+13670 [kworker/u16:1-flush-8:0]
+13771 /usr/lib/firefox-esr/firefox-esr -contentproc -parentBuildID 20210119174753 -prefsLen 7360 -prefMapSize 224416 -appdir /usr/lib/firefox-esr/browser 12711 true rdd
+13790 lightdm --session-child 16 21
+14140 [kworker/1:2-mm_percpu_wq]
+14560 [bash] <defunct>
+14691 /usr/lib/firefox-esr/firefox-esr -contentproc -childID 15 -isForBrowser -prefsLen 7585 -prefMapSize 224416 -parentBuildID 20210119174753 -appdir /usr/lib/firefox-esr/browser 12711 true tab
+15303 /usr/lib/firefox-esr/firefox-esr -contentproc -childID 17 -isForBrowser -prefsLen 7585 -prefMapSize 224416 -parentBuildID 20210119174753 -appdir /usr/lib/firefox-esr/browser 12711 true tab
+15568 [bash] <defunct>
+16067 [bash] <defunct>
+16320 [bash] <defunct>
+17244 [bash] <defunct>
+17583 [bash] <defunct>
+17626 [bash] <defunct>
+17808 bash
+17836 [bash] <defunct>
+17859 bash
+17865 [bash] <defunct>
+17947 [bash] <defunct>
+18103 [bash] <defunct>
+18197 [kworker/3:1-events_power_efficient]
+18203 [kworker/1:1]
+18292 bash
+18489 [bash] <defunct>
+18510 /usr/sbin/CRON -f
+18511 /bin/sh -c (/home/osabio/projects/boltek_measure/BoltekData/data2/run.sh)
+18512 /home/osabio/projects/boltek_measure/BoltekData/boltek-efm --ini=data2/boltek-efm.ini
+18515 /usr/bin/Thunar file:///home/osabio
+18550 xfce4-terminal
+18554 bash
+18593 /opt/sublime_text/sublime_text /home/osabio/projects/boltek_measure/BoltekData/boltek-efm.log
+18607 /opt/sublime_text/plugin_host 18593 --auto-shell-env
+18671 [bash] <defunct>
+18679 bash
+18683 mc
+18685 bash -rcfile .bashrc
+18712 /usr/lib/xorg/Xorg :1 -seat seat0 -auth /var/run/lightdm/root/:1 -nolisten tcp vt8 -novtswitch
+18721 lightdm --session-child 23 26
+18725 /lib/systemd/systemd --user
+18726 (sd-pam)
+18808 /usr/sbin/lightdm-gtk-greeter
+18812 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+18813 /usr/lib/at-spi2-core/at-spi-bus-launcher
+18818 /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 3
+18820 /usr/lib/at-spi2-core/at-spi2-registryd --use-gnome-session
+18822 /usr/lib/gvfs/gvfsd
+18829 /usr/lib/gvfs/gvfsd-fuse /run/user/115/gvfs -f -o big_writes
+18849 lightdm --session-child 15 28
+18905 [kworker/0:1-cgroup_destroy]
+18906 [kworker/2:2]
+19225 [kworker/3:2-mm_percpu_wq]
+19250 [kworker/u16:2]
+19288 [kworker/3:0-mm_percpu_wq]
+19301 /usr/sbin/CRON -f
+19302 /bin/sh -c (/home/osabio/projects/boltek_measure/BoltekData/data2/run.sh)
+19303 /bin/sh /home/osabio/projects/boltek_measure/BoltekData/data2/run.sh
+19304 ps ax -o pid,cmd
+20393 dbus-launch --autolaunch=d586f3e8b669424093d34bf55e55b3a3 --binary-syntax --close-stderr
+20394 /usr/bin/dbus-daemon --syslog-only --fork --print-pid 5 --print-address 7 --session
+20397 /usr/lib/dconf/dconf-service
+21198 [kworker/0:2-events]
+24896 [loop3]
+25142 /bin/bash /opt/google/earth/pro/google-earth-pro
+25145 /opt/google/earth/pro/googleearth-bin
+28199 xfce4-terminal
+30632 /usr/sbin/cupsd -l
+30633 /usr/sbin/cups-browsed
+30710 /usr/lib/cups/notifier/dbus dbus://

@@ -67,7 +67,7 @@ int main (int argc, char* argv[])
     {
       // if (FD_ISSET(master[0], &rfd))
       // {
-		    char str1[15] = "$+19.98,0*C9\r\n";
+		    char str1[15] = "$+19.9\r\n";
 		     (void) write(master[0], str1, sizeof(str1));
 			// tcflush(0, TCIFLUSH);
 		    usleep(50000);
